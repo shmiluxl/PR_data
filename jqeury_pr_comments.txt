@@ -1,0 +1,2513 @@
+18408	I was able to trim off 11 bytes (https://github.com/gibson042/jquery/compare/b1lly:13956...b1lly_13956), but it's still +33. @mikesherov, can you think of a better way to express `parseFloat( getStyles( elem ).height )`?
+18408	No, unfortunately.
+18412	There should be a space before `arg.length` & after `arg.nodeType`.
+18412	Please read more carefully – http://contribute.jquery.org/style-guide/js/
+Actually, I would not mind to add spaces, but as long as this is not defined in the link above i will restrict myself on that part. 
+
+/cc @scottgonzalez
+18412	This specific case is, indeed, not mentioned there, though the opposite isn't as well. Adding spaces here is more consistend with the rest of rules and the rest of code.
+
+I agree it should be added to docs, though.
+18412	Grouping doesn't require spaces. This is one of the few places where we don't have a rule either way.
+18412	@scottgonzalez We probably should.
+18412	Sure, we should have rules for everything. I would prefer if the rule was just parenthesis always require spaces, but there's been resistance on that front. I'll just add another bullet in the spacing section that says parenthesis always require spaces, t
+18412	<blockquote>Adding spaces here is more consistend with the rest of rules and the rest of code.</blockquote>
+Some people might differ on that.
+
+Style guide is like some specification – "If the spec says to do something, you do it. If it says to not do s
+18412	And if it doesn't say about sth? This is this case.
+18412	The style guide says liberal spacing is required. I'd prefer more explicit wording along the lines of: "Parentheses, braces, and brackets require spaces on both sides." The exceptions are that a closing paren/brace/bracket does not have a trailing space i
+18412	The way I naturally tend to use spaces is that if they are part of the plumbing of the language construct (if, when, try/catch, function calls) they have spaces. If they're used for grouping they don't. That makes it a little easier to distinguish the two
+18412	That's the rule I've been using as well, but it's not documented and I'm not sure we're consistent about this. I'd rather have fewer rules, unless there's a demonstrable benefit (reduction in accidental errors, easier to read, etc.).
+18412	@mzgol "If it says to not do something, you don't do it" == "if it doesn't say about sth?"
+18414	This should be in the first line, see:
+http://contribute.jquery.org/style-guide/js/
+point 3.
+18414	Space after `if`, the same in other places.
+18414	I'm not sure if this case really needs to be separated. @mikesherov, what do you think? (also, space after `if` missing)
+18414	not `"auto"`, just what `curCSS( elem, prop )` returns, i.e. the `computed` variable from below.
+18414	Actually, I'm quite sure it's not needed, especially that you don't take into account `1%` and similar things and it just adds bytes. Fallback to `position()` is enough.
+18414	We use `curCSS( elem, prop )` internally, it's faster. Also, current code causes invoking `getStyles( elem )` twice (see the beginning of `curCSS`) which adds overhead. `curCSS` accepts the third optional parameter `_computed`, you should use `styles = ge
+18414	Also, if you remove this condition, the `isAutoPosition` variable gets redundant, you can paste the condition directly below.
+18414	This adds 5 bytes but prevents `getComputedStyle` to be invoked twice which is nice. @mikesherov, what's your opinion?
+18414	use `notEqual` for this last assertion.
+18414	relative element with left/top auto needs to return 0px immediately and can not get px value by offsetParent/offsetTop/offsetLeft.
+18414	Still: not `"auto"`, just what `curCSS( elem, prop, elStyles )` returns, i.e. the `computed` variable from below.
+18414	You're right this is needed... It's a lot of bytes, though, I wonder if there's a shorter way to achieve that.
+18414	BTW, since we want `computed` to be returned here, you can move this check to line 521, just after `isAutoPosition` check.
+18414	ok, but it will cause extra code to run at runtime for static case. 
+since getting left/top of position static element is rare condition, it's fine.
+18421	The line got too long here, break it so that it doesn't exceed 100 columns.
+18421	BTW, this comment is not true any more; since you're moving this code block anyway, you can remove these lines.
+18421	Please restore this line at the end of file.
+18421	As @gibson042 previously noticed, you don't need the `!jQuery.fn.position` check here - we're in the `offset` module so this method is present.
+18421	Well, this is not obvious but currently it goes like this: if a module path doesn't have `/var/` somewhere the last return statement is usually removed by the build process. You want your code to work after such removal, so:
+1) Change this line to just `
+18421	You need to correct it in the same way as what I suggested in a comment to `curCSS`.
+18425	Maybe more descriptive: `addGetHookIf`
+18425	I even had `registerGetHookIff` at the beginning but @timmywil preferred shorter names. :) I can change it but let's agree on sth first.
+18428	I think you meant "registerGetHookIf", but I like shorter names. How about `registerIf` or `addHook`?
+18428	I did mean iff as in "if and only if". Just "if" would be fine, though.
+
+How about "addGetHookIf"?
+
+>
+I suck at making up meaningful short names. :) I wanted to have "get" in
+the name to indicate it's adding a hook only for getter. The first version
+18428	Or maybe this "get" isn't necessary but "if" would be OK? I.e. "addHookIf"?
+
+As I said, I suck at making up short names. :D
+18432	Smaller and usually faster: http://jsperf.com/infinity-based-isnumeric
+18432	> ...but misinterprets hex literals ("0x...") and other leading-number strings 
+
+Do you mean HexIntegerLiteral or a string that looks like a HexIntegerLiteral? (ie. `0x1` vs `"0x1"`)
+18432	The latter... should I change this line to `...but misinterprets leading-number strings, particularly hex literals ("0x...")`?
+18432	That's fine.
+
+Keep in mind there will be two new literals, Binary and Octal, but I doubt we'll have to worry about that anytime soon :)
+18432	We'll just switch from `>= 0` to `isFinite` if that's called for.
+18432	Well, in that world `Number.isNaN(obj)` will work correctly too :)
+18432	@rwaldron What's the problem with `Number.isNaN` in Chrome?
+18432	My apologies, I actually misread both the spec and the wiki. `Number.isNaN` correctly identifies `NaN`
+18432	I'm personally in favor of this patch. Sure, it's less readable but it's used only here and clearly described so if anyone reads the support comment it should become clear to them as well. And no one will use this code directly, only via `isNumeric` so th
+18432	I'm fine with `isNumeric()` being obscure. Just make sure we have unit tests for all cases.
+18432	@scottgonzalez https://github.com/gibson042/jquery/blob/335b7c65982190d44ac26b7b51c04b2fbbf63d83/test/unit/core.js#L464
+18439	Remove the `jQuery.fn.position` test; it is now guaranteed true.
+18439	you forgot to re-remove this line :)
+18439	I believe the discussion was to make `css` module depend on `offset`, instead of `offset` being dependent on `css`.
+
+The previous circular reference was from `offset` being dependent on `css`, which seems to not be there now?
+
+18439	Well, considering that the hook uses `curCSS` defined in `css.js`, if the hook is to be moved to `offset`, the `offset` dependency on `css` is unavoidable. The `css` module, on the other side, needs `offset` just for this hook AFAIK so I believe it has to
+18439	And `offset` still does depend on `css`, see https://github.com/jquery/jquery/blob/master/src/offset.js#L4
+18439	Remove the ` || !jQuery.fn.position`; it is guaranteed false.
+18439	True, nice catch!
+18439	Now that we use AMD, all source files should have all variables defined or passed inside them. If you use a good editor like WebStorm or Sublime Text, you'll see easily you have a few undefined symbols here.
+
+I see at least `curCSS`, `support` and `rnum
+18442	`function( v )`, see http://contribute.jquery.org/style-guide/js/#good-examples
+18442	spaces after `7`, after `(` and before `)`
+18442	Thanks @mzgol for patiently reviewing my code! I am sorry there was so much back and forth but this is my my first contrib to jquery. Will be more careful from next time.
+Thanks again!
+18449	Not a big deal, but you could `return support` here and just include `./attributes/support` as the support var. The build will handle removing the return statement.
+18449	I actually had sth like that at one point but I changed it not aware of the fact the build step will remove the return statement, good to know! I'll change that.
+18449	@timmywil Should it be `./attributes/support` or `./attributes/var/support`?
+18449	This is lots of line changes but I figured out since this diff will be large anyway...
+
+We have a mess in lists of support properties here, they're in a completely random order. I made it alphabetical, it'd be good if we kept it that way.
+18449	We'll be dropping Safari 5.1 and since iOS 5.x doesn't have CSP at all, these guard is not needed.
+18449	It would be nice to not have this function duplicated in `/unit/support.js`. I could download the file via AJAX then but not sure if it's worth it...
+18449	:+1: 
+18449	Seems like you figured it out already, but `./attributes/support` is right because you're not adding another var, just adding to an existing one.
+18449	Could you mention ticket number here?
+18449	Will do.
+18449	BTW, any ideas, @orkel, why this test does not fire unless I move it from here to `unit/support`?
+18449	mmm, it does work in my browsers
+18459	@timmywil Any ideas how to make it better?
+18459	I don't think this is necessary. First, it doesn't change the build order, and second, the ajax module xhr is the only ajax dependency that needs support and it lists it itself.
+18459	Nice catch. Looks I missed it because this is 1.x specific.
+18459	Unfortunately it does
+
+From this module method <code>extend</code> called which in turn calls <code>isPlainObject</code> which asks for <code>support.ownLast</code> property from <code>support</code> module i.e. <code>support</code> module depends on <c
+18459	To clarify: both solutions are bad, so i ask you if you have a better one.
+18459	Modules shouldn't have to be concerned with the dependency tree. ajax does not directly depend on support. It depends on core having extend and shouldn't care beyond that. Sure, core should depend on support, but in that case r.js messes up the build orde
+18459	Hm, i'm confuse, i could swear ajax module was throwing exception without this line and was changing order of inclusion.
+Anyway you right, i will remove this change.
+18459	Shoot, you already did that :-)
+18475	Just use single quotes...
+
+`\"order\" ` => `'order' `
+18489	http://contribute.jquery.org/style-guide/js/ says ".nodeName must always be used in favor of .tagName."
+18489	why not just use `css_defaultDisplay` here? Also, perhaps instead we can show the hidden element first to see if it's inline rather than assume it's inline if the default for the tag is inline?
+18530	You shouldn't modify this.
+18530	There should be spaces around elem.
+18530	Missing space before prop.
+18530	else is not necessary here.
+18530	else is not necessary here.
+18530	If you add the dot to finish a sentence, it should also begin with a big letter.
+18530	I wonder how this creeped in. I don't remember doing anything manually to change this file.
+18530	The assignment can happen here, but declare this at the top of the function body please. 
+18530	is it possible to have only one place where `jQuery( elem ).position()` is called?
+18530	```sh
+$ pushd src/sizzle
+$ git checkout 01318877a96ffe44bb82b514e77e0d18fb709b38
+$ popd
+$ git add src/sizzle
+$ git commit -m 'Revert Sizzle changes'
+```
+
+And while we're at it, let's get your work off of `master`...
+```sh
+$ git branch 13956
+$ g
+18530	won't this trigger a reflow and therefore would be worth to be deffered until really required?
+18530	In general, getComputedStyle by itself doesn't cause a reflow. If you get a property from the computed style like `background-color` it won't cause a reflow. It's only if you ask for a property like `width` that it reflows. See http://gent.ilcore.com/2011
+18530	@dmethvin your first link claims `getComputedStyle` causes a reflow. I also don't understand one thing: `getComputedStyle` result has `width` as one of the fields so why wouldn't it cause a reflow?
+18530	`gCS` uses getters for its properties so it doesn't necessarily compute the `width` (for example) unless you use it. It may do a re-compute of the style cascade though. The "will it reflow" article shows how tricky it is to predict the behavior for specif
+18530	when I get to the checkout step -- fatal: reference is not a tree: 01318877a96ffe44bb82b514e77e0d18fb709b38
+18533	postion, still
+18533	gah... k sry
+18535	`postion`
+18535	I guess you mean `position()[ prop ]`?
+18545	`window.getDefaultComputedStyle` was written out of the spec recently: http://dev.w3.org/csswg/cssom/ and is at risk for removal in FF in favor of someone implementing this as a different approach to the problem: http://dev.w3.org/csswg/css-display-3/#the
+18545	So you propose to hold off on that code path? We might use it until it exist in FF or until other means will be provided.
+18550	The source change itself is relatively harmless (+3 min+gzip bytes and no significant consequences), but this test paints us into a corner regarding how we can address invalid input. If you're truly asserting only the lack of exceptions, then something li
+18550	I agree, the only thing we want to guarantee is that there is no error thrown. We are not going to guarantee the outcome otherwise.
+18550	I agree too. However, using ok function in the preceding way appears to me that the test is still focusing on checking the function outcome. Are you happy to apply the following popular Java idiom?
+
+```javascript
+try {
+  jQuery.parseHTML( ... );
+} ca
+18550	My preference is to maintain the assertion count, which would mean following up the `parseHTML` with an `ok` anyway and leads to the above. We do have examples of both, though: https://github.com/jquery/jquery/blob/e53a91909061c7a7280a274990db179b94db81b6
+18550	When it comes to maintain assertion count, your preferred version wins. :smile: . It also makes the code neater and follows the same style as the preceding assertions.
+18583	Why? [`pre-uglify`](https://github.com/mzgol/jquery/blob/cbe0b428180a935abe447ca55213e1762b072492/Gruntfile.js#L526) is supposed to produce the input we *really* want for `uglify`—namely, a copy of `dist/jquery.js` with all banners removed and the new (sm
+18583	Yeah... I don't like this either but too many tools are failing at the moment so we have to sort-of monkey-patch them.
+18583	...which of course means that we're not free to remove the embedded (Sizzle) banners either! As far as I can tell, this **all** has to be backed out until https://github.com/gruntjs/grunt-contrib-uglify/issues/22 is resolved.
+18599	the try/catch should only span arround this line.. all remaining statements are jquery internal and shouldn't throw a exception in this case?
+18629	nit: indents are wrong
+18629	What is the point in this? 
+
+Edit: I see now that this is linked with the logic here https://github.com/jquery/jquery/pull/1226/files#L2R35, but neither is necessary. `Data`'s only client is objects that can have data stored, so the `accept` method shou
+18629	Why is this better?
+18629	nit: remove this line
+18629	nit: this exception is allowed
+18629	Actually, just remove this completely and define the method at `jQuery.acceptData`
+18629	Why is this being removed?
+18629	This can be removed since it's irrelevant to `Data` and objects that are allowed to store data
+18629	This has always been an acception: `[number]`
+18629	This has always been an acception: `[number]`
+18629	This is irrelevant to the actual necessary changes, but it's a definite improvement—nice one.
+18629	Nice to get rid of this!
+18629	Nice use of the bizarre array argument :)
+18629	Not any more. Array access and string arguments are no longer exceptions.
+18629	Until it wasn't :-P
+
+See jquery/contribute.jquery.org@45ccdb352ba5ca44c017b586a54d1b20fafc9ee3 and jquery/contribute.jquery.org#21.
+18629	Get back in your corner!
+18629	;)
+18629	Considering that all jQuery modules will use internal <code>Data</code> to store data, how do propose to fix <a href="bugs.jquery.com/ticket/8335">#8335</a> otherwise?
+18629	<code>data_discard</code> was used only once, what's the point to define this actions as function?
+18629	Let's shift the conversations to the relevant PRs  
+
+btw, thanks for breaking these up :)
+18636	Looking at the [interesting](https://github.com/jquery/jquery/commit/0252b78201f817f87d10f14c85d0f37e4c50ce22) [history](https://github.com/jquery/jquery/commit/bfa32317d2a56145a2d1151c60ce2d71d1328dd9#L0L371) here, I think this is a valid (if breaking) c
+18636	This is the flawed assertion.
+18636	Agreed. Like you said this assumption broke when we went with the W3C and propagated events to `window`.
+18659	I'm really not thrilled about this, but shuffling `domManip` arguments is likely to cause even more problems than adding one for `replaceWith`… and omitting it means duplicating code (e.g., for handling function arguments).
+18659	Another gem. :angry:
+18659	What if they're not detached? Did this show up from a new test case?
+18659	Doesn't bother me. I don't see a lot of duck punchers of this _undocumented_ entry point except for @ehynds at https://github.com/ehynds/jquery-create-event/blob/ee08a718bf3cf7ca83a184e62673efe6fc837b17/jquery.create.js#L27 and that code should still work
+18659	eeer, yeah. that code isn't my finest moment. I've been telling people to avoid it as the plugin is essentially a big anti-pattern.
+18659	This cropped up in the existing "[replaceWith on XML document](https://github.com/gibson042/jquery/blob/db309e74e8eb7b269665794146101f7add0b4a68/test/unit/manipulation.js#L595)" test, which (now that you mention it) I should probably expand to cover all D
+18659	So did it throw an error? Or did it just not move the child? That is strange.
+18659	@dmethvin For clarification, you think we're free to introduce destructive changes to the signature of `domManip` in 1.10/2.0?
+18659	It's supposed to be an internal undocumented API, I don't know how much duck punching might be out there. If it makes sense to change the sig I'd be up for it though. I thought the buildFragment/clean change would cause more mayhem but it's been pretty un
+18659	It threw a DOM error, but apparently XML manipulations are little exercised, by us or by users of the library.
+18659	I'd imagine the direct use of `domManip` (either as-is or for duck punching) would be extremely minimal.
+18659	Is Safari 5.0 still supported? Safari has a little different numbering scheme than most other browsers so I suppose Safari 5.1 is a major version; dropping support for 5.0 would be in line with what jQuery declares to support.
+
+Besides, Safari 5.0 has a
+18659	I thought it was needed for the old-but-not-dead iPhone, but I could be wrong.
+18659	The latest failing versions are Safari 5.0, iPhone 3GS, and iOS 4.3.2 iPad 2. I'm going to just leave the XML edge case busted.
+18659	:+1: 
+18659	iPhone 3GS is upgradable to iOS 6, iPhone 3G can go as far as 4.x.
+18659	I think this is a sufficient makeover. Any objections?
+18659	Oh, right, we're in sane-browser land. Took me a minute to remember that. Yeah, LGTM!
+18659	<blockquote>we're in sane-browser land</blockquote>
+Are we? Did i miss some major announcement? That's a <code>1.x-master</code> branch, which means we still support IE6/7, and even if we didn't – that's behavior change.
+
+@gibson042 Compare results of 
+18659	@orkel I observe no differences: http://jsfiddle.net/NAAP8/1/
+
+However—and my apologies for not sufficiently communicating this above—I am aware that this is very likely a breaking change for some oldIE edge cases, and **still** advocate the removal in 
+18659	<blockquote>@orkel I observe no differences: http://jsfiddle.net/NAAP8/1/</blockquote>
+<code>$.domManip</code>? What you trying to show here? With that code you will not observe any difference, because it's not different from my example. You have try it 
+18659	Yeah I was all confused. Since this is for 1.x then we wouldn't be able to do it because of the table issue with oldIE. It's a great idea for 2.0 though!
+18659	> Yeah I was all confused.
+
+Apparently you weren't alone. Mea maxima culpa; I'll fix it today.
+18659	This is always confuses me, should brackets have spaces?  <a href="http://contribute.jquery.org/style-guide/js/">Style guide</a> implies it should, like <a href="https://github.com/gibson042/jquery/blob/dfc1d2c7aee55cce70938c3515655cd51df8c98e/src/manipul
+18659	@orkel That's because none of us are sure. :smiling_imp:  I think this case should have spaces according to our current style guide though. http://stage.contribute.jquery.org/style-guide/js/
+18659	neat!
+18659	It's easy: Spaces all the time.
+
+The style guide was updated recently to reflect this. Exceptions are nothing but trouble.
+18659	It is done. Trouble had better look elsewhere.
+18662	These tests should not change. Windows and documents are not anchors.
+18662	Why was this removed?
+18662	If this is for selector-native, it _should_ throw an exception.
+18662	True, but these are only testing that no exception is thrown. We shouldn't make guarantees about results from invalid input.
+18662	It was moved to [traversing](#L6R715), and there expanded.
+18662	Good point; we'll have to deal with that in the 2.x cherry-pick.
+18662	Can't we supply both like we were before? Arguably `jQuery(window).is(anything)` is valid input, but it's always false.
+18662	I think that link is off, but I trust you. I didn't know we moved it.
+18662	Case in point: http://jsfiddle.net/TVHUb/
+18662	I'm confused. What's the point?
+18662	That we're free to let `jQuery( window ).is("a")` return true at some future point (unlikely as that may be), just like `jQuery( window ).is("*")` returns true today. The explicit purpose of these tests is to verify lack of exception, and they shouldn't d
+18662	`jQuery( window ).is( "*" )` should return `false`. Returning `true` should be considered a bug. Having non-elements fail all selectors is fine, since that's correct behavior.
+
+I feel like we've had this discussion a few times, but the general concept i
+18662	Agreed Scott. I remember having this discussion as well; that was the decision that was made. We need to ensure consistency here.
+18662	I was sold basically as soon as I hit submit. Tests updated, and jQuery is now marginally more consistent!
+18667	I think this would be better tested by dropping the `"from test"` check above and replacing this assertion with one that checks the inheritance chain of `inheritor.eq(0)`.
+18681	This is the only change I'm not sure about. @jaubourg do you recall if this was just oldIE? It's passing unit tests but not sure if there is a test for this.
+18681	tl;dr: I think it's safe.
+
+[This test](https://github.com/jquery/jquery/blob/master/test/unit/ajax.js#L185) probably wouldn't pass. I know it was an issue with older IEs: IE7 and below iirc, maybe even just IE6 or IE7. I clearly remember the wtf express
+18681	Okay, well that test seems to pass on ie9/10 ... the only ajax test failing is the HEAD Requests one which has been broken for a while.
+
+18681	As I wrote in my inline comments to the now-outdated (only because of rebasing) commit feed77e3f328371e2750950f11e199de72e4ba8d, I've tested this on `1.9-stable` and this change doesn't make any unit test in oldIE to fail.
+18681	Well let's give it a try in 2.0 beta 3 and see how it goes.
+18681	> As I wrote in my inline comments to the now-outdated (only because of rebasing) commit feed77e, I've tested this on 1.9-stable and this change doesn't make any unit test in oldIE to fail.
+
+It could be a combination of an older php with oldIE. That's t
+18681	Yeah... AJAX land in oldIE is a very dark place, probably better not to save 2 bytes for sth so uncertain.
+18682	should matchesSelector stay for browsers which do net yet support the latest spec
+18682	No browser has already unprefixed `matches` so there's no need for that.
+18682	So you should keep the old value name for BC
+18682	Why? I've kept all prefixed versions but, as I said, once implementors start unprefixing they surely won't use an outdated name so I don't see the need to keep it.
+18685	I'm not sure this is sane...  I don't think we actually NEED to set hidden here.
+18685	Setting this internal "hidden" is probably enough
+18685	My question is: what is "display: hidden"?
+18685	:smiley_cat: 
+18685	I always change 'none' for 'hidden', sorry. XD
+18685	Please take another read through the style guide.  Comments should be preceded by an empty line, also, there should be a space between the `//` and the comment body.  I would also suggest rephrasing this:
+
+```
+// If there is dataShow left over from a s
+18685	```
+} else {
+18685	Relying on setTimeout is pretty terrible to do in the unit tests, but there aren't many choices right now.  Anyone have a better approach to suggest for these?  Is this basically what `.toggle().stop.toggle()` checks are doing already?
+18685	Actually it's worse, these tests should use at least a full 1 second for timeouts because that's what firefox does when unfocused anyway.
+18685	}, 500 );
+18685	}, 500 );
+18685	}, 500 );
+18685	}, 500 );
+18685	One of these days @mikesherov - you, me and a night with sinon?
+18685	yes, yes.
+18685	Can I change your suggestion to:
+<pre><code>// If there is dataShow left over from a stopped hide or show and we are going to proceed with show, we should pretend to be hidden</code></pre> ?
+
+Because the following condition only proceeds if we have <co
+18685	sure okay, now i remember why that worked... heh... so because its already "not hidden" during a failed hide, it works so we only need to do this cheat for `value === "show"` ...  I forgot I figured that out earlier :)
+18688	in some places the order of vars was optimized for gzip... 
+
+don't know why you changed it or if it is smaller now as before?
+18688	IIRC I changed it to be in the same order as in `master`. I'll check sizes.
+18688	This change saves 2 bytes in full gzipped (probably irrelevant) and does nothing to minified gzipped. And now this line looks identical to what's on master so it was probably a good thing to change that.
+18703	This whole block can be dramatically reduced by using `jQuery( div )` as the constructor, which will have a `context` property not appearing in `jQuery.fn`.
+18703	:+1: 
+18703	`for(` => `for (`
+18703	remove `func` from this list
+18703	+1
+18703	remove `func` from this list
+18703	Space after `for`.
+18703	Why not:
+
+```js
+for ( i in jQuery( div ) ) {
+  break;
+}
+```
+
+18703	Because of line 150 where I check to see if the first property is an ownProperty of the jQuery object. I didn't want to `jQuery( div )` twice.
+18703	@rwldrn I suppose I could do `support.ownLast = i !== "0";` on line 150 instead, then I don't have to keep a reference to `jQuery( div )` around. Do you like that better?
+18703	Although, that seems a little more fragile to me, as the current method would work even if `"0"` is ever not the first own property. I suppose if that happened, though, a unit test would fail (hopefully).
+18703	> Because of line 150 where I check to see if the first property is an ownProperty of the jQuery object. I didn't want to jQuery( div ) twice.
+
+Yeah, I missed that part.
+
+
+18703	do we use this `$div` style anywhere else?  I don't think we do... Perhaps `wrapped` ?
+18703	This style is actually in our API style guide. We don't need this a lot in core, but it would be nice if the style guides had the same rule on this.
+18703	Can we remove it from the API style guide? Where is that anyway? It goes against the UI style guide.
+18703	It should probably stay. It is more readable. Still, the API guide has other things that are better suited for online documentation (such as 2 spaces instead of tabs to avoid horizontal scrollbars). So I guess all the guides don't need to agree. In this p
+18703	Actually, I'm surprised UI has a separate style guide at all. Seems like the "Javascript Style Guide" could cover all of our javascript projects. http://contribute.jquery.org/style-guide/js/
+18703	I see, it just adds to the standard guide. Sorry for the confusion. http://wiki.jqueryui.com/w/page/12137737/Coding-standards. 
+18703	Except....I don't see anything about jQuery-wrapped variables in the UI guide.
+18703	I want to delete this entire thread.
+
+@bjohn465, can you do me a favor and try this:
+
+1. Remove the `$div` declaration
+2. Replace the `for-in` with this:
+
+```js
+for ( i in jQuery({}) ) {
+  break;
+}
+support.ownLast = i !== "0";
+```
+
+
+
+
+18703	@rwldrn +1 (or rather, roughly -10).
+
+...and then -1 more by switching to `jQuery( support )`.
+
+I think we're done here.
+18703	@bjohn465 To recap, that's:
+
+```js
+for ( i in jQuery( support ) ) {
+  break;
+}
+support.ownLast = i !== "0";
+```
+
+thanks!
+18713	needs to be `Support: IE9`. is IE7/8/10 also affected?
+18713	Well, I haven't had a chance to check the issue on these ie versions. Anyway, I will try to check it out today.
+18713	BTW, you also meant the comment needs to be changed to Suport: IE9 ..., right?
+18713	Yes
+18713	@staabm: this issue doesnt affect IE7/8, I havent had a chance to test it on IE10 though.
+18713	This will not work correctly when `elem` is a select-multiple. Also, I'm concerned about this edge case fix requiring too much additional code, but that could be mitigated somewhat by templating off the `get` method. I'd try starting with
+```
+var option
+18713	This issue is not occurring to select-multiple. Do you mean that the code has to be changed so that calling val() with a 'wrong' option value(s) on select-multiple will also select the first option? Currently no option will be selected when passing a 'wro
+18713	Observe the change in behavior from introducing this code: http://jsfiddle.net/wuM8f/
+18713	My latest changes: http://jsfiddle.net/aVjyH/1/ to preserve the current behavior when <code>elem</code> is a select-multiple. The new code changes <code>elem.selectedIndex</code> only if <code>elem.type</code> is <code>"select-multiple"</code> and <code>e
+18713	That's right of course; we slip it in there because a select-multiple with nothing selected can follow the single-get `null` case. Regardless, http://jsfiddle.net/aVjyH/1/ is too much code, and will compress poorly. Seriously, follow along these lines:
+`
+18713	Following your advice, I've come up with [this change](http://jsfiddle.net/aVjyH/2/). However, I don't use the <code>index</code> variable because the variable is not useful in determining if post-iteration fixup is necessary. I also use <code>elem.type =
+18713	What file are you using to verify size changes? Our standard metric is jquery.min.js.gz, and you'll be able to see it directly from `grunt` if you rebase onto 91d57647e9700de1a3693a400c85688c90304dde. I'm certain, for instance, that you'll achieve better 
+18713	I had verified size changes using the generated minified file before you pushed the latest changes regarding to the grunt-compare-size. Just pulled the latest changes and started using this plugin for my verification. You are also right when saying native
+18713	Yes; assuming the following works (and if it doesn't then `$selectMultiple.val([])` etc. are likely broken), I would consider it better than the if/else:
+```js
+if ( !optionSet ) {
+	elem.selectedIndex = -1;
+}
+```
+
+The remainder is then mostly optimi
+18739	In a not-too-distant future...
+
+```js
+[ ...Set( document.querySelectorAll("*") ) ]; // unique ;)
+```
+
+
+18739	This is a nice way to do it. 
+18772	Moving this assignment into the var declarations saves a byte.
+18772	should code be 400?
+18772	The code [here](https://github.com/jquery/jquery/pull/1164/files#L2R1432) wants 40.
+18774	Why not:
+```
+return value === "" ?
+    this.remove() :
+    this.domManip(…);
+```
+?
+18776	Why not `elem === ""` instead?
+18776	the test also handles the case of `" "`, which wouldn't work with `elem === ""`
+18776	... but would have been caught by `elem` since `!!" " === true`.
+18776	elem === "" should work as well. 
+18776	-3 bytes by changing this condition to `elem != null && elem !== false`.
+18780	I know it's commented out anyway, but should this be removed?
+18780	Yes. Thank you
+
+:suspect:
+18780	Don't need the `unlock`, just combine these two lines
+18780	Had to back the `.isArray` calls out because of qtWebKit users, so now I'm wondering if the `Object.defineProperty` usage will run into issues. We may want to test before landing.
+18780	Is the check for `undefined` missing args consistent with the use of `arguments.length` that we have been migrating to? We only need to maintain that on the API surface and not in the internal methods but I just want to be sure it was considered so we don
+18780	I'd like to talk more about that when you have a chance.
+18780	It's designed to correctly match the current API. This case: `.data("abc", undefined)` is already accounted for with tests.
+18780	Preliminary investigation suggests that we're clear on both `Array.isArray` and `Object.defineProperty`.
+18780	Out of curiosity, since jQuery.isArray === Array.isArray in 2.0, would jQuery.isArray compress better here?
+18780	Question: if we're willing to `defineProperty`—and, obviously, it works in all supported browsers—why override `valueOf` and keep global caches instead of just storing data [right on the objects](https://github.com/jquery/sizzle/blob/3bfb4ce2601af9a4c4aed
+18780	This should probably continue to reject non-element non-document nodes, also for [1.x](https://github.com/jquery/jquery/blob/03ab9b9f9061df1cf38fd6466c2241dfb2ae9cdc/src/data.js#L224-L234) compatibility.
+18785	Needs comments on why this being done.
+18785	`ret = ...` missing?
+18785	To be clear, this is declaring that `$textNode.traversingMethod()` always yields an empty collection—a breaking change with respect to 1.9.0—for compatibility with current state of 2.0 beta.
+
+Instead of declaring text nodes to be invalid input for all t
+18785	> To be clear, this is declaring that $textNode.traversingMethod() always yields an empty collection—a breaking change with respect to 1.9.0—for compatibility with current state of 2.0 beta.
+
+Ugh. I think that's a critical point, we're introducing a pre
+18785	An addendum: I'm not opposed to doing this eventually, just to changing the behavior in a patch release when we can instead let people know that this is coming for 2.0 so they can start fixing code.
+18785	@dmethvin The middle ground is keeping code unchanged in both branches, but immediately getting very loud about the fact that text nodes etc. have never been documented as valid input and code relying on old (functional) behavior will likely fail when run
+18785	Analogy with document fragment might be appropriate –
+
+```js
+jQuery( document.createDocumentFragment() ).text("test")[ 0 ].childNodes.length; // 1
+jQuery( document.createDocumentFragment() ).html("<div></div>")[ 0 ].childNodes.length; // 0
+jQuery( do
+18785	No, <code>jQuery.unique</code> is destructive.
+18785	To the last question: 1.10 ;)
+18785	>>This seems disastrous.
+
+>makes me nervious, i don't want to be the guy who breaks stuff, if we go with your solution – it would definitely will not break anything, if we go with mine – it would definitely will, affected amount of code can be relativel
+18785	>> I don't think there could be a compromise, 1.9.x API should be the same as in 2.0, right?
+
+> The documented API, I would say. We're free to have the two versions behave differently for invalid input; we just need to be careful about exercising that f
+18785	Yeah, if this was 1.9.0 and we'd been able to give some advance notice I think we might give it a try. But right now we're talking about making a big change in 1.9.1 which seems like a bad idea. 
+
+We know we can go back to handling text nodes if we need
+18785	<blockquote>To the last question: 1.10 ;)</blockquote>
+Now i get it :-)
+<blockquote> I'd like for us to have a consistent set of support rules for text/comment/fragment in 1.10/2.1 and we have some time to figure it out.</blockquote>
+You mean not only 
+18795	Double quotes
+18795	Double quotes
+18795	Double quotes
+18795	Fix whitespace and use double quotes
+18803	@JanMiksovsky is there any other way to check this? a call to innerHTML requires a serialization of the DOM which forces a layout. It can be slow, of course. Is there a DOM method/property to explore here instead?
+18803	@paulirish do you know whether a `typeof elem.innerHTML === "undefined"` has the same drawback? At the moment there's a bug in Uglify that converts it to `elem.innerHTML === undefined` when we minify but that will be fixed or we can use a workaround.
+18803	reading the [ticket](http://bugs.jquery.com/ticket/13342), i see that shadow roots are doc frags with innerHTML, unlike normal doc frags..
+therefore I'm thinking: `"innerHTML" in elem`  might be a solution here
+18803	@paulirish thanks for pointing out the perf problem.
+
+My original fix had been to test directly for a document fragment with `elem.nodeType === 11`, which would pick up document fragments, but unfortunately would also pick up plain document fragments, n
+18803	Just as a note, based on recommendation from a few browser engineers, Modernizr is changing it's detects to do a `in` check vs accessing the property and checking against `undefined`
+18803	> @paulirish do you know whether a typeof elem.innerHTML === "undefined" has the same drawback?
+
+it does.
+18803	@janmikovsky
+
+> `elem.nodeType === 11`, but unfortunately would also pick up plain document fragments, not just shadow roots
+
+right. makes sense.
+
+> I suppose this could be changed to `element.nodeType === 11 && element instance of WebKitShadowRoot`
+18803	An `in` operation nested in a potential hot path could have negative performance consequences. 
+18803	I'm going to ask a few more questions back on the [ticket](http://bugs.jquery.com/ticket/13342), perhaps it's just too early to do this.
+18803	@dmethvin +1 As I've been following this, my feeling is that it may be premature to start supporting feature with only one implementation and no reified (in the 3 implementations sense) specification. 
+18803	I added more background and motivation on the ticket.
+
+@paulirish Your `"innerHTML" in elem` check does indeed work as you suggest, and all tests pass with it. I also noticed a similar check a few lines earlier for the .html() getter case which could be
+18805	Why? https://github.com/jquery/jquery/blob/master/src/support.js#L63 
+18805	Ah, I didn't check `src/` when looking for references. Thanks for the catch, but I'm not sure what to do with it. Is there any way to bring this into the test suite proper? If not, it seems like we should at least copy the full/minified logic from [test/i
+18824	This is safe everywhere, right?
+18824	`.insertBefore()` with `null` as a second arg? Should be...makes you wonder why it wasn't done that way. I was worried about the `.remove()` above on a text node but that seems okay too.
+18824	Ah, it was a straight [translation](https://github.com/gibson042/jquery/commit/551c2c9f4ac776b6d53600c452ad40a4b4d6670b) of jQuery methods to DOM methods. Imma land this.
+18834	Looks like <code>handlerQueue</code> assignment is no longer needed
+18834	Some people consider use of array as object is a bad practice, Firefox does not like <a href="http://jsperf.com/array-as-object">it</a> very much, plus such pattern will increase memory use, although, both of these facts are not crucial in these context.
+18834	A fair point, but we're [already](https://github.com/jquery/jquery/blob/fa71737fb424a43b9f705098c5be06b1c40f29b6/src/event.js#L85-L86) doing it and will probably continue for the smaller size, although I'm by no means married to this pattern. Note also th
+18840	you don't need to `removeData` because it won't be added at all?
+You should verify that `.data()` on comments does not add data, so e.g. `.hasData()` should return false when using `.data()` on a comment-node in the first place...?
+18846	Let's just go all the way back to `for ( ; i < l; i++ ) {` here.
+18846	<a href="https://github.com/orkel/jquery/commit/d65bed5a049374a2564611c6de4490bfcb436c91">ok</a>!
+18850	You'd probably save a little by declaring `script` and `callback` in the same expression. And why use this pattern over `jQuery("<script>").prop(...)`?
+18850	Because the `.prop` version doesn't work in Chrome (didn't test other browsers)... for reasons unknown to me btw. I was really, really surprised by it but it could be the way I attached the node to the dom (using jQuery methods). This script injection bus
+18850	Oh yeah... jQuery manipulation is right out because of `domManip` script handling. You'd have to use `[0]` and native methods.
+18850	DOH! *slaps forehead*
+
+Fixed.
+18850	Bit late since this already landed, but the .off() call is redundant unless I'm mistaken, .remove() would already remove all bound event handlers
+18850	That's why it's so nice to have that many pairs of eyes looking at this code :) Thanks!
+
+https://github.com/jquery/jquery/commit/1c77259d06e49ccaedbd0f7adf968e10748dacc0
+18856	Should this block be moved outside of the try-catch to make it as small as possible..?
+18856	if it can be, then <code>try-catch</code> could be removed, apparently, it can be, but that is another story.
+
+18861	Both this and [L471](#L1R471) are prime candidates for our `i = 0; while ( (elem = array[i++]) ) {` [pattern](https://github.com/jquery/jquery/pull/1046#issuecomment-10723592), but failing that I'd still check the compressibility of putting initial assign
+18861	What is this assertion supposed to accomplish?
+18861	<code>td</code> is a special element that defined in <code>wrapMap</code>, in <code>jQuery.clean</code>/<code>jQuery.buildFragment</code> it should descend to the right depth, parent would not be <code>div</code> like with most nodes, but <code>tr</code> 
+18861	:+1:
+Could you mention that in the assertion text as something like "parentNode should be documentFragment for wrapMap elements"?
+18861	<a href="https://github.com/orkel/jquery/commit/d83f90e576959bc0ae7cab0f13708cda73b768dc">sure</a>
+18861	Could you use also `core_push` here? Or maybe `push` instead of `core_push` in L446?
+18861	Same here
+18861	good catch!
+18861	done, it saves 15 bytes or so and it definitely looks more elegant. 
+18863	This will fail across frames 
+18863	Good point, although we also leak memory across frames. I could get the target's window and look for window.MouseEvent I guess.
+18863	If we wanted to backport this to 1.9, we could keep the regex's and do the check here instead of in the loop you're extracting below.
+18872	Just use `if (fn)` and swap if/else case
+18872	This can be shortened: `return list && list.length > 0`
+18872	If you want a boolean but still more compact an expression, you could go for:
+```
+return !!( list && list.length && ( !fn || jQuery.inArray(fn,list) > -1 ) );
+```
+Unless other think it too cryptic (and provided I got the logic right, which is not a gi
+18877	Just curious: what might cause an exception to be thrown? (Maybe you can add a comment?)
+18877	The convention we're using for support related comments is:
+
+```js
+// Support: IE(version)
+// Explanation
+```
+
+This will make it easier to identify these in the future :)
+18877	Forgive me for being a pedant... the `open()` doesn't open a socket, it actually runs a series of environment checks and parameter tests to normalize and prepare for making a request, prior to the call to `send()`.
+18877	Same note about support annotation:
+
+```js
+// Support: IE9
+// #11426: When requesting binary data, IE9 will throw an exception on any attempt to access responseText
+```
+18877	I'm really looking forward to destructuring in ES6—all of these `xhr.foo` properties would be easily cached like:
+
+```js
+let { status, statusText, responseText } = xhr;
+```
+
+Hooray for the future!
+18877	That's a leftover I meant to remove but forgot to. Used to throw an exception in versions of IE that implemented XHR through ActiveX.
+18877	Good to know, seems like I didn't get the memo :/
+18877	This comment made the transition verbatim from 1.4.x without anyone noticing :P
+18877	This wouldn't work because getting responseText for a request fetching binary data throws an exception in IE9 :P
+18877	Neither did I, @scottgonzalez steered me in the direction and it caught on :)
+18877	Haha, that's cool—like I said, forgive me for being a pedant ;)
+18877	Ah-ha! Good to know :D
+18877	On second thought, I'll leave it in. That way, envs without xhr will continue to work as expected (nodejs, etc).
+18877	what browser does support onload/onerror? also where is "onabort" and "ontimeout" ?
+
+18877	From the spec it looks to me that onabort is only fired when the user calls `xhr.abort()`? Since users call *our* jqXHR to abort I don't think it buys us anything. The timeout logic is handled in ajax.js for all transports.
+18877	navigation to another page in chrome while xhr is active causes "abort" event;
+also, ESC key in Chrome while page is loading aborts all xhrs... and "abort" events are fired;
+ESC key in FF also stops xhr activity(https://bugzilla.mozilla.org/show_bug.cgi
+18877	Actually, not handling those aborts is a plus when you consider the heat we have for having them notified in the first place :/
+
+Maybe we could handle them but I have a feeling we'll be crucified by people who expect them not to be.
+
+And yes, no timeo
+18877	ok
+
+@jaubourg, no-timeout is the default in spec, but does browsers implementation work according to spec?
+
+18877	Oh thank goodness, someone put out the @jauboug shaped signal light.
+
+> navigation to another page in chrome while xhr is active causes "abort" event
+
+I just don't see where in the XHR spec it says to do that. I definitely agree it could be useful but
+18877	If you find a bug in a browser regarding this point, then please report it to the browser's bug tracker because that would be a violation of the spec. I'm not aware of any problem here. Did you encounter any issue or are we musing with hypothetics for the
+18877	yes this is all hypothetics, and i am asking because i am interesting if this bugs exists, 
+and because with your commit old code(but tested code) was removed and replaced with new code
+
+18877	@Yaffle, but the new code must be better because it's green and the old code is red. :smile_cat:  If you want to investigate making some change here feel free. However, we'd most likely need to ensure the semantics were close to 1.9 as well, so keep IE6 i
+18877	Well, this code was made with the spec in mind (and this is 2.x, 1.9 still has the old code).
+
+Also, regarding aborting on unload, we do that ourselves for good old IE. I don't remember if it's in the spec proper (don't have time to check right now) but
+18877	> the new code must be better because it's green and the old code is red.
+
+/me installs an extension on Dave's browser that turns green code into orange.
+
+uh oh :P
+18877	well, have convinced
+
+18877	Whether the browser aborts the request on page unload (it should) and whether it fires the abort event (???) are two different things. There could be security issues to letting JS handle the event, for example would the abort handler be able to pop up dia
+18877	I didn't check but I'd expect those same exceptions to be in order since I'd expect the `onabort` to be fired in the same event loop as the window's `unload` event.
+18877	Although ... [this page](https://developer.mozilla.org/en-US/docs/DOM/XMLHttpRequest/Using_XMLHttpRequest) seems to show an `alert()` being used with a `loadend` event that would be fired after `abort` I assume. 
+
+It seems like the current code is being
+18877	> It would be worthwhile to get the XHR spec to clarify these cases so we can use them in a decade or so.
+
+Yeah, let's bug the spec's editors and... wait... :/
+18890	This was an accident with ctrl + f. I reverted the others but forgot about this one :(
+18894	This looks odd. It repeats the logic of the index here. `.add` already does this and returns the object in question.
+
+Perhaps change this:
+```js
+var index;
+this.add( owner );
+index = this.owners.length - 1;
+
+this.cache[ index ][ data ] = value;
+`
+18894	`undefined` vs. `arguments.length`. Not sure which we prefer nowadays?
+
+As it is right now `arguments.length` can't be used because the arguments are passed by name from the public methods so they are always in the arguments list.
+
+```js
+var key, dat
+18894	The parentheses appear to be unneeded in this case (not just technically but for readability as well), since all of the parts are logical `&&` operators (presumably an earlier version had a logical `||` in there?)
+18894	:thumbsup:
+
+Obscure optimisation is for Uglify to handle.
+18894	Hm.. object literal instead of `key, value` ?
+18894	What case this cover? (has tests?) Or should this use `camelKey`?
+18894	I think this may have been some artifact that "mis-filed" as I re-wrote this part. It looks like I can actually just return `undefined` here
+18902	:dancers:
+18902	Should we drop Chrome and just mention Safari 5.1 now?
+18902	Agreed.
+18902	This deserves a retest on Safari 6.0, as it might be present there, and I'm fairly certain it's fixed in Chrome.
+18917	`// Support: IE9`
+18917	+1, done.
+18919	`// Support: Firefox >16`
+18926	Not sure about all browsers, but just tested IE9, FF, and Chrome and it doesn't look like context needs to be maintained, so this could be shortened to just jQuery.parseJSON = window.JSON.parse;
+
+http://jsfiddle.net/zytgN/
+18928	Why not just return text.trim() rather than core_trim.call?
+18928	what about `trim: String.prototype.trim`?
+18928	That will give `"null"` and `"undefined"` for `null` and `undefined` won't it?
+18928	returns empty string in Chrome 23 and IE9.
+18928	wait, the string has to be the context, sry. I tested wrong.
+18928	*sigh*
+
+jQuery overloaded it's trim, that's why. This part: `text == null ? ""` is non-standard and we're stuck with it.
+18934	May wanna use something like this instead:
+
+```js
+grunt.file.expandFiles( "test/unit/*.js" ).map(function ( path ) {
+    return path.match( /^test\/unit\/(.+)\.js$/)[1];
+});
+```
+18934	It'd be a bigger change that way, and I wanted to keep this one super simple. The other tasks all `expandFiles` *inside* the task function, and I wasn't sure how deliberate that is.
+18934	I'd be okay with a more general solution. 
+18934	Same here :+1: 
+18936	`ret.push` can become just `core_push`. Also, I wonder if we might get a little bit out of moving the `.get()` down here, or having the for loop mirror [manipulation.js#L320](https://github.com/dmethvin/jquery/blob/a8f53ba89d827b7b0b90fdf9b2c323517908fcf1
+18936	Turns out I don't need the `.get()` at all, since the methods accept a jQuery object and `.apply()` sees the jQuery object as array-like. That brings it down to -34.
+18936	Nope, spoke too soon; oldIE.
+18952	is there anyway we could split this over two lines? :)
+18952	Yeah, I noticed that too when @dmethvin commented on it and I had to scroll horizontally. FIxed.
+18954	How much smaller is this? I'm concerned about maintenance because we may need to add more specified fixes later.
+18954	A few bytes, I think. If the list grows, we should either unconditionally define an object to do key lookups on (i.e., at top of file) or switch to regex, but this is such simple logic anyway that I'd rather have the savings now than use a suboptimal sche
+18967	I missed this one in the `echo` → `echo/` sweep.
+18967	Yeah, we probably should use direct scripts a-la `echo.php`. Would simplify the folder structure anyway. I wanted to use a service-oriented approach to make it more readable, but it's actually making it worse.
+18967	@gibson042 Thanks, fixed in my upcoming PR. Made sure there are no other ones we missed:
+
+`dev/jquery (master)$ ack 'service.*echo[^\/]' --js`
+
+(0 matches)
+18985	Tabs, not spaces
+18985	See [L720-L741](https://github.com/bsorbo/jquery/blob/51dd5db496cdb996fe2f5dc4bae611e024fefaeb/test/unit/css.js#L720-L741) for a better way to check support than indirect inference.
+18992	I'd like this better if were handled in the body instead of the condition: `value = jQuery( value ).not( this ).detach()`
+
+That way we still detach elements in `value` that *aren't* in `this`, and avoid calling `jQuery( value )` twice.
+18992	The ticket was always going to incur a performance hit, but I *really* like the elegance of this solution. Note that `if ( !selection || jQuery.inArray( elem, selection ) < 0 )` will probably compress a little better, but what's a De Morgan transformation
+18992	I'll take a look at it.
+18992	:+1: 
+18992	The hard numbers are masked by rounding, but http://jsperf.com/jquery-fragcache shows a ~7% speed improvement from the cache on IE6-7, no significant difference on IE8-9 and Chromium 20, and ~13% on Firefox 17 (not that we really care on newer browsers).
+18992	Wow, thanks for that bench @gibson042! IE6 is just pitiful, but we knew that. Okay, I think we should go ahead and do this thing. It will be a good file size savings and also in-memory usage will be lower since we won't be creating frag cache entries. The
+18992	@PaulBRamos, do you want to take that too? Removing the fragment cache will make your job here much easier. You'll probably want to submit a separate pull request for http://bugs.jquery.com/ticket/11989 and then rebase this one after it lands.
+
+I'm happ
+18992	/kill fragcache \o/
+18992	I'm on it!
+18992	Woah. Fragment cache gone just like that. Amazing. 
+18999	Should the result of this deferred chaining map go into a new array instead of reassigning `requests`?
+18999	Hmmm... could be. That would solve the abort problem more elegantly for sure.
+19008	Why not `( structure[ dataType ] || ( structure[ dataType ] = [] ) )` so that the field is not assigned to all the time (not that critical a code path but heh)?
+19008	Love what you did there.
+19008	Hope you didn't hate me too much for not having commented there in the first place :/
+19008	Which reminds me we should probably use the expando for the ajax anticache param too, so that two jQuery instances in the same window won't collide.
+19008	That's just awesome and so elegant, I so hated the trickeries in there ><
+19008	+3 bytes gzipped; I'll mostly defer to you on prioritizing size/clarity/performance when they're in conflict.
+19008	Thanks; this and `jsonProp` were my favorites.
+19008	Not at all. It's really clever.
+19008	Mmmm, good idea.
+19008	Not a critical path, size it is ;)
+19008	`jsonProp` is pure brilliant!
+19008	Any benefit in something roughly like...
+
+```js
+var op = "push";
+
+while ( (dataType = dataTypes[i++]) ) {
+  // Prepend if requested
+  if ( dataType[0] === "+" ) {
+    dataType = dataType.slice( 1 ) || "*";
+    op = "unshift";
+  }
+
+  (structure
+19008	That's pretty much how the code went prior to the change so I gather it's smaller gzipped as it is now.
+19008	Confirmed.
+19014	Why this changed behaviour? There are no tests that support a newly appointed return value...
+19014	This behaviour isn't changed, look closely
+19014	Ugh. Github's diff doesn't show enough lines to give context to the change. Sorry for the noise.
+19020	This test couldn't have been run, let alone pass—`$` is undefined.
+19020	Also, the quotes need to be flipped around, double on the outside and single on the inside 
+19020	JSHint checks for double quotes. Please make sure to run grunt before submitting pull requests. 
+19020	I landed this in ca5e06a15c99d5c181aff6e08804ca803424648d, with the quotes flipped around ... not sure why $ is defined now but I missed that!
+19020	Because we use the file resulting from the build process now? ;)
+19020	I'm getting my repos all mixed up now, I have a jQuery.noConflict() in the jquery-compat plugin tests. :see_no_evil: 
+19020	I did indeed run the test outside of the jQuery test suite. Because haven't installed all grunt plugins and was eager to make this pr. Should have known better. If something can go wrong, it goes wrong.
+19025	I think this entire special-case block and corresponding expense of `.index` can be eliminated if the `jQuery( this ).remove()` on [L296](https://github.com/PaulBRamos/jquery/blob/6fb68d22f4b136f0b467cf060ea3286f8cc6fcce/src/manipulation.js#L296) moves af
+19025	That's a dangerous expression (see [L506](https://github.com/PaulBRamos/jquery/blob/6fb68d22f4b136f0b467cf060ea3286f8cc6fcce/src/manipulation.js#L506))... I'm not saying it's wrong, but you should throw a lot at this to test for robustness.
+19025	I was a bit worried about it myself, but didn't see any issues during testing.  Can you think of a scenario where this might be an issue?
+19025	I didn't, but I can definitely give it a shot.
+19025	This is going to have implications with respect to managing embedded `<script>`s, so test it *extra* thoroughly. Also, we use `===` instead of `==` except for the special case of `window`.
+19025	Ahh, nevermind, I missed the reference to L506.  I'll explore that.
+19025	<code>jQuery.remove()</code> not only remove node from DOM, but also remove all data from the element, 
+so with this change, if we have, for example, events attached to node that replaces itself, all events from that node will be lost.
+
+@PaulBRamos how
+19032	All variables should be declared together. But in this case, I don't think we need the variable at all.
+19032	Why did you change this block? Does your version yield a smaller jquery.min.js.gz?
+19032	I could *maybe* see not caching useless results, but supporting `.show` etc. in a hidden body is a bit much, especially for this cost in size and computation.
+19032	This was already discussed here: http://bugs.jquery.com/ticket/12904
+19032	Right. I forgot about the linting. Sorry.
+
+I was merely trying to yield a better minification.
+19032	I changed it because:
+
+Appending to .cssText needs to happen on a separate line.
+
+...and changing .cssText *after* the iframe has been inserted in the dom, might cause reflows (allbeit small ones)
+
+...and invoking `jQuery.extend` is inherently slowe
+19032	Curly brace belongs on this line 
+19037	This actually changes the semantics of the code; we can't accept this without a test that supports the change.
+19037	I think he's saying the bug only happens when compiled with r.js. A qunit test may not be possible. However, if existing tests still pass, that may be all that is needed to support the change.
+19037	If that's the case, it sounds like a bug in r.js...
+19037	@rwldrn How does this change the semantics of the code?
+19047	This is way too much code, and the reset block in particular has both style issues (`var` declarations should be collected at top of scope) and behavior issues (you are setting `display: none` on parents that might not have previously had inline styles). 
+19047	This would be more readable if you manipulated the properties of a single element before each assertion rather than creating multiple elements against which to test. Also, you are lacking coverage in the case where elements other than the direct parent ar
+19047	This is a great attempt, and thanks for contributing. But yeah, the truth here is what was discussed in the ticket: That a stacking doll approach is slow, error prone, and heavy handed. Really, the mistake we made was ever having hidden elements return >0
+19051	Why not just share the current `fxNow` and keep that logic around?
+19054	Two points:
+* The existing logic ensured a numeric `percent` in all cases, but this change makes it possible to get NaN. I don't think we care, but it's worth pointing out that there is in fact a functional change.
+* I was unable to reproduce your probl
+19054	The error is a segfault. The following is output from the LG Esteem that exhibits the behavior: https://gist.github.com/33772b893b28f543484b I assume the behavior is similar for the other devices mentioned in the bug thread, but I don't have those particu
+19054	Is it possible that this is a device specific issue... Can anyone confirm 2.3.4 on another device?
+19054	It looks like a number of people have already confirmed the crashing behavior with `animate` on several devices and versions of 2.3.x in the bug thread: http://bugs.jquery.com/ticket/12497
+19057	shouldn't the var statement be the first statement inside this block (so before the defintion of the `secondToggle()` function..?
+19057	jshint wanted the named function at the top - It probably wouldn't of complained right beneath the `var` statement, but the order of those two things is pretty inconsequential
+19058	I have no idea why we were testing an undocumented interface.
+19058	Is the removal of passing along `emptyGet` intentional?
+19058	It might be safer for future maintenance to keep the early return even though using `notxml` in two if statements may compress better.
+19058	:+1: 
+19058	Err, I'm reading this wrong. nvm.
+19058	No, it wasn't; nice catch. Fixed.
+19061	What does this do?
+19061	Ensures that the Gecko-specific method is always defined ahead of time so QUnit doesn't bitch about it being "created" when running in Firefox etc.
+19063	I'm very concerned about the cost of an additional `setTimeout` for every animation tick. But if we're going to incur it, why not move the `fxNow ||` that precedes calls to `createFxNow` inside of that function instead of creating a new one?
+19067	`if( ` => `if ( `
+19067	Please review the [jQuery Core Style Guide](http://docs.jquery.com/JQuery_Core_Style_Guidelines)
+19067	Better?
+19067	Since `.buildFragment()` isn't a public API we really shouldn't be using it in unit tests. How do we get fragments like this via the public API?
+19067	spaces
+19073	What about when `method` is defined in `ajaxSettings`? You'd probably better do some magic on `s` or maybe even in `ajaxSetup`.
+19073	That's a good thought. Hm.
+19073	So, I think I'm going to go with implementing it in jQuery.ajax. Determining the correct method from the settings is the job of the ajax handling function, not of the settings handling itself.
+19073	I dunno, I'd expect aliasing a "setting" to be somehow related to "settings handling", wouldn't you say?
+19073	No, I'd disagree. Perhaps my choice of terminology was poor, but saying two settings are equivalent involves some insight into the meaning of the settings. The ajaxSetup method doesn't *know* anything about the meaning of the settings it's operating on, a
+19073	use `asyncTest`
+19073	use `asyncTest`
+19073	remove
+19073	remove
+19073	This still won't work. Consider if you set `method` on `ajaxSettings` and `type` on the options given to `ajax`. This will always use the value of `method`in `ajaxSettings`. That's why I still think it would be better to handle this in `ajaxSetup`: the lo
+19073	Doh!
+
+![facepalm](http://i.imgur.com/jF5ib.gif)
+
+Now I'm understanding @dmethvin's remark about global settings being a bad idea. Ok. I'm walking out the door. I can look at refactoring this later.
+19073	I think this just goes to show, no pull request that starts "I was in the mood for a bite-sized feature this morning..." will be simple. 
+19073	One day I'll learn.....
+19073	Would this account for all possibilities?
+
+s.type = options.method || options.type || s.method || s.type;
+19073	I suspect it would. @dmethvin and @jaubourg - I'm not particularly a fan of a four condition OR, but dropping it in ajaxSetup doesn't exactly let us escape from something like that... how do you guys feel about @curiousdannii's solution?
+19081	This comment should be cut too
+19081	@curiousdannii thanks!
+19089	`.selector` is going away in 1.9, right?
+19089	It's being severely curtailed. All the junk in pushStack will go away and only the `$()` constructor will set .selector. That lets `$(selector).live( ... )` still work but saves us a bunch of bytes in manipulation.js
+19091	Thanks for the test case showing why we can't ignore spaces in the filter. I think this is ready after it's cleaned up a bit:
+* The class doesn't need to be dynamic, you can use a `t12685`/`opacityTest`/etc.
+* Provide descriptive messages for all assert
+19091	thanks for your patience, here is the new pull request:
+
+https://github.com/jquery/jquery/pull/1005
+19093	Unnecessary, as the `node: true` option covers this already. 
+19093	Good to know. On the move today, feel free to hack in the branch ;)
+19097	regex abuse.
+
+just do: `process.platform.match === "win32"`
+
+also excessive parens
+19102	needs whitespace inside the parens
+19102	same as above
+19102	...and again
+19102	no space there 
+19108	parentOffset belongs on the next line.
+19108	append to ("#qunit-fixture") instead.
+19108	append to ("#qunit-fixture") instead.
+19108	style nits: `window.scrollTo( 200, 200 );`
+19108	style nits: `window.scrollTo( 1, 1 );`
+19108	why not use `jQuery.offset.supportsFixedPosition`?
+19108	style nits here too: `window.supportsFixedPosition = ( checkDiv.offsetTop === 20 || checkDiv.offsetTop === 15 );`
+19108	`jQuery( checkDiv ).remove();`
+19108	why declare without assign?
+19114	create a separate test rather than calling `Qunit.reset();`.
+19114	The above is inside of the `testRemoveClass` function that gets used a couple of times throughout this module. Inside of that function `QUnit.reset();` is being used a couple of times prior to my updates. Should we refactor that entire function to remove 
+19114	Nevermind. I got confused. This is fine. 
+19114	Unassigned variables should precede assignments (i.e., make this the last declaration). Also, why `type = typeof value` instead of `stringValue = typeof value === "string"`?
+19114	Same comments as above with respect to position and value.
+19116	<3
+19116	Whitespaces?
+19141	too many newlines here?
+19144	Un-assigned vars need to go above assigned vars ;)
+19144	I'd recommend turning on invisibles in your IDE and enable some sort of "remove end of line and empty line whitespace on save"
+19150	Comment should be a few lines below?
+19150	Nope! Line 119 is testing for more than one character of whitespace between event types. I should update the content of the comment to be more accurate.
+19150	Style nits ;)
+
+Please add whitespace padding to the inside of the invocation parens on each of these, thanks!
+19182	Why? 
+
+`name='name' name='name'`?
+19182	It's just following the pattern from the target element.
+19182	No it's not. It's duplicating the `name` attribute, with the same value. If it was copying the target element it would do this: `id='name' name='name'`
+19182	Oh, heh, looks like a bug fixing the bug :-P Sorry, I misread your comment.
+19182	:yellow_heart:
+19182	Oops. It was a bug fixing the bug. Fixed it.
+19185	Can you provide a demonstration of why this change is necessary on [jsFiddle](http://jsfiddle.net) or similar?
+19185	The `+`s should be surrounded by spaces. Also, it'd be more appropriate to append to `#qunit-fixture`.
+19185	See above.
+19185	Because some IDE will format code. such as change
+
+filter: alpha(opacity=10)
+
+to
+
+filter: alpha(opacity = 10)
+
+then error occurs, see tc.
+19185	clean new pull:
+
+https://github.com/jquery/jquery/pull/999
+19209	Isn't this binary `~` too hacky?
+19209	Seems like this trick is getting more and more well-known, but comparing with 0 or -1 is also fine.
+19209	That would be more readable, especially that it's in tests where we don't care about size.
+19209	I truly hate this function. 
+19211	Is that `elem.style` path accurate for SVG? It might be safer to drop entirely.
+19211	Its safe, at least from a unit testing perspective! I also don't see why it wouldn't be safe. An I missing something?
+19211	It looks like SVG and their inner elements have a style object (separate from their style attribute) but it's not clear if that is due to the spec or just consistent implementations. http://jsfiddle.net/ZrKkc/
+19211	So doesn't that mean `style="display:inline"` will produce false positives for `:hidden`?
+19211	@gibson042, yes, the hidden child problem is there for SVG.
+19211	Right, the problem is that SVG children will have incorrect getComputedStyle values. :-\ Perhaps this IS a wontfix until SVG becomes a bit more stable. Good catch gentlemen. @dmethvin, thoughts? This really only works for certain situations, and I guess w
+19231	All of this code was changed to support this? 
+19231	It looks like to me that you have changed much more then required to fix the #12531.
+
+Is there a reason (I am not aware of) for not simply removing  `[^#<]*` from the expression?
+19231	@rkatic agreed. I'd like to know more about the reasoning for all of the changes as well.
+19231	I actually find the use-case in the ticket more compelling than these shenanigans. In the ticket he's using a custom attribute, which just happens to have a value that's wrapped by <>, not actual HTML.
+19231	@cmcnulty The use case in the bug (and this) is definitely a legitimate bug. I'm wrapping up a patch that is significantly smaller to address this issue.
+19233	as long as we are rewriting this, can we get better variable names than `i`, `r`, `n`, and `l` ?
+19233	`ret.splice( n--, 1 );`?
+19233	`.call( arguments )`?
+19233	don't ask me, it was there...
+19233	I didn't write it either, but it seems it's removing the duplicate from ret, which means `n` needs to back up one after the removal.
+19233	Oh, ha. @gnarf37 was just talking about spacing.
+19233	This one I get... it uses `slice` to cast array-like `arguments` as an *actual* array so it can take advantage of `join` to generate the almost useless selector parameter for pushStack.
+19233	also here... @gnarf37 was only talking about spacing
+19241	`.append()` never gets tested?
+
+Also, the test description should read as "what it _should_ do"
+19241	There should be coverage for all manip methods
+19243	I'm pretty sure these do the same thing
+19243	If they are supposed to, Sizzle has a bug in handling positional selectors. :)
+19243	Oh, not for combinators, must be POS.
+19243	ugh
+19243	woops, didn't see your reply
+19246	0.0001 seems like a magic number here. Can we be certain that this condition gets met?
+19246	It *is* a magic number, and... no. The choice of how good a fit to demand while protecting ourselves against nontrivial loops is arbitrary.
+19246	My only other thought is that we might want to put in an iteration counter as a failsafe? Also arbitrary, but guaranteed to terminate.
+19246	How many iterations would you make through here, and would the starting value get a lot better after dozens of iterations? If the infinite loop is the exception then a small failsafe loop counter might be easier to deal with and a heck of a lot less myste
+19250	Why did this move to after the manipulation?
+19250	Why are we not allowing `replaceWith` on `documentFragment`s (or other `nodeType`s for that matter?)
+19250	More specifically, the jQuery( this ) .remove() needs to come before appending for the other node types that replaceWith can be called on. The fact that this doesn't break a unit test only shows that our unit tests aren't covering enough cases for replace
+19250	I did a quick look when i was trying to solve the "`$('<div>abc</div>')` has a parentNode" problem in 1.8.1 and just decided the whole method was too far gone to clean it up until 1.9. Since the `isDisconnected()` method doesn't return `false` for html co
+19250	I had a similar feeling when I was looking at the same bug. The function is FUBAR'ed and I'm inclined to halt any further changes.
+19250	@dmethvin, for the record, prepend and append work on nodeType 11 (documentFragment)...
+19250	Good question. (1) because I had a bad call to `next.parentNode.insertBefore( elem, this );` (should have been `insertBefore( elem, next )`) which has been fixed in the latest commit. Also because of the `nodeType === 1` check, it seemed appropriate to re
+19250	fwiw, I was following the lead of `append()` which is currently used in `replaceWith()` although I missed the fact that it was also checking for 11, so I've fixed that in f698ccb, *however*, `before()` doesn't do such a check. I'm not sure what the reason
+19267	Flip the quotes around: single inside double
+19267	Flip the quotes around: single inside double
+19272	Better use $.data() instead, for performance reasons...
+19272	For consistency we can't.  It must pass through the chunk of code that can read html attrs.
+19274	should this be covered by a unit test?
+19274	No, see the ticket.
+19274	From the PR description: "I did not include unit tests, however, because those would require us to be testing SVG and MathML, and is not something I'm interested in. I'm interested in fixing this regression and including an explanatory comment. If this me
+19274	Args sorry
+19276	what happened to `$count = 1` parameter here?
+19276	typo: `'no` => `not`
+19276	The parameter is passed by reference and hold the value how many args have been replaced. Since it is not read after the call it is not necessary..
+19276	Will fix it on monday
+19279	You have a few style issues, and we expect to use strict equals when we can, it should be changed to:
+
+`selMatch[ sel ] = jQuery( sel, this ).index( jqcur[ 0 ] ) !== -1;`
+19286	Are we sure here that context can not be a instance of another jQuery?
+How about `context = !context.nodeType && context[0] || context;` or something...
+19286	args can have an Array of jQuery objects as of 1.8.0 but context should either be a DOM element or jQuery object at this point.
+19286	If I am right, it can be a DOM *node* (can not be a window) or a jQuery *instance* - but which jQuery?
+19286	Oh, that's a good point, it might not be our instance! Your property check is looking a lot prettier now.
+19286	Yea... and if PR discussions was stored in git repositories too... it would be visible that this one was actually the first one :)
+19289	This should work in all supported browsers. Testing against `"\xA0\uFEFF"` would be more correct technically, but cost 4 bytes gzipped.
+
+*Cue someone showing an implementation recognizing BOM but not NBSP...*
+19289	@gibson042 this is really nice :)
+19291	There's gotta be a better way
+19291	I'm all ears. 
+19291	currently no good way I can see to detect that IE9 and IE10 have fired interactive too early. Although, now that there's this repeatable test case, perhaps you can poke around too. For now, this seems to be the only way (although I agree it's dirty).
+19300	Just curious as to the reasoning for not comparing to the empty string. If `trim` was to return an empty array when it encounters a BOM character, these tests would still pass.
+
+Also, it would probably be nice to have tests against strings that would not 
+19300	Just curious, are we sure we don't have an implementation that will understand `\xA0` as being a whitespace but not `\uFEFF`? Seems like a hell of an inference here.
+
+We could probably use something like `( "\xA0\uFEFF".replace( core_rnotwhite, "" ) ===  
+19300	Better still would be `core_rnotwhite.test("\uFEFF\xA0") ? /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g : /^\s+|\s+$/g`
+19300	And @gibson042 strikes again. You're right, of course. My only excuse is that I didn't get enough sleep.
+19300	It's an inference based on our understanding of how regular expressions are implemented. If \s matches \xA0 then \s picks up unicode characters, if not then it doesn't. It's not a check for the specific characters that we want to trim as whitespace, it's 
+19300	I suddenly understand why the typed language guys are all high and mighty. Yeah, I'll assert against the empty string.
+
+Yup, I'll write an assertion or three that doesn't trim to zero length.
+
+Thanks @jaubourg 
+19300	Please, read your code carefully:
+
+"Does your \s match \xA0 **and \xA0 only**?"
+"Yes, awesome, **let's assume it matches \uFEFF too** and use \s"
+"No, too bad, we'll enumerate **all of** the unicode characters we want to trim one at a time."
+
+What happens
+19300	I appreciate what you're getting at it just seems along the same lines of questioning whether test() and replace() do the same thing when encountering a regex containing \s. We know that it does and so after testing with test() we feel safe using replace(
+19300	Actually I'd expect the use of \xA0\uFEFF a third time would actually gain size, but I'll defer to @gibson042 on this one.
+19304	This is so much nicer to read <3
+19304	I agree. It's a more readable code.
+19307	Almost perfect ;)
+19307	Am I being blind?  What'd I miss?
+19308	I was thinking perhaps we need a Grunt task for this.
+19308	I nominate you!
+19310	Should the convertion be handled inside the default function , so one can decicde per use case if it is required?
+19312	Are you volunteering to update this for every release?
+19312	Maybe a note would be suffiecient, which tells the user to checkout the branch in the latest stable version?
+19312	Let’s change it to something like `git checkout $(git describe --abbrev=0 --tags)` then?
+19312	Oooh, dead sexy. 
+19312	I should probably add another note saying that running `npm install && grunt` (or checking out the git submodules manually) is required before creating a custom build.
+19312	@mathiasbynens I love it :)
+
+Feel free to add additional instructions for anything that isn't covered but should be
+19312	See #892.
+19318	Being explicit is faster then coercion, I suspect that extend is a perf sensitive operation...
+19318	I don't think it's in a path that hot; this particular code only runs once to pull in the data attrs.
+
+19318	Clearly you haven't read http://bugs.jquery.com/ticket/12365 !
+19318	+1 dmethvin!
+19318	<3
+19318	it's a nested loop...?
+19318	I love hot paths.
+19318	I love hot pants
+19318	Nested? https://github.com/gibson042/jquery/blob/f7067566d1bda266e8bc9bc7c51d8755d068fbd4/src/data.js#L230
+
+19318	I'd like to call a friend on this one... my eyes tricked me into thinking [this](https://github.com/gibson042/jquery/blob/f7067566d1bda266e8bc9bc7c51d8755d068fbd4/src/data.js#L232-240) was deeper then it is.
+
+Day 1 of TC39 + trying to look at PRs. Whoops!
+19318	NP, just wanted to be sure I didn't miss something. 
+19318	LOL
+19322	I'd like to avoid having numbered identifiers. This seems like something that belongs in the support module.
+19322	@rwldrn Yeah, I wasn't too thrilled about that either, but the fix depends on getting a style off of the object returned from `getComputedStyle()`. The reason I went ahead and saved it off to a variable was to get around the `Expected an assignment or fun
+19322	This is a strange thing... It's really bothersome that IE10 actually released a browser that allows a clone's style property to retain reference to the source element.
+
+Anyway, yeah this belongs in `jQuery.support`, maybe called `jQuery.support.whenWillTh
+19322	Instead of having the ticket number in the variable name, usually we mention the ticket in a short comment. So you can just pick a short name or even reuse `i` if it isn't used in the code path.
+19322	Is this a regex because of backgroundPositionX and backgroundPositionY? Is that value still work for those? Also, can you move the regex out to it's own variable at the top of the file with the other regex's so it can get cached?
+19324	When ```fn == null``` and ```data == null``` and ```typeof selector === "string"``` - this code will be called after commit, in contrast to before code
+19324	Did you lint this before you committed? http://danheberden.com/share/144fc4c.png 
+
+Also, the indentation is all goofed up.
+19328	Missing semicolon?
+19328	Also missing whitespace here and on line 147
+19332	Why not simply passing `jQuery.trim` to `.map()` directly?
+19332	Iterating using a simple for-loop is much fast..
+19332	Perhaps `exposeHeaders = jQuery.trim(exposeHeader).split(/\s*,\s*/)` instead?
+19342	Style guide issues...
+
+- Please change all of the single quotes to double quotes (double quote strings, use single quotes inside the strings).
+- Please observe the whitespace rules http://docs.jquery.com/JQuery_Core_Style_Guidelines
+
+
+19365	where'd this go?
+19365	What happened to the modularity check for jQuery.ajax?
+19365	`expected( 36 )`
+19365	I think it was removed in the pre-rebased branch for smaller size. I can add it back, but is `Error: no ajax` really better than `TypeError: jQuery.ajax is not a function`?
+19365	I started with that. Then things got out of hand. :wink:
+19365	No, it's not. :-) But you should then make sure this test works with a custom build that has ajax excluded.
+19365	You're a wily one, @mikesherov. [Now](https://github.com/jquery/jquery/commit/14e1501b89491bad5744af4f2a8d084834f9c295) that it's possible to test no-ajax builds, I can confirm that this PR passes. :triumph:
+19365	Thinking ahead a bit, calling jQuery.ajax directly is probably not a good idea here. If we let people drop in alternate ajax implementations they may not take the same args. What if we add a simple API to ajax.js that does this, and people can shim in the
+19365	That is an excellent point, but probably out of scope for this batch of changes. I'll open a new ticket.
+19365	:+1: 
+19365	btw, this pull request is awe-inspiring.
+19370	Isn't the proper format for a comment like this `// support: IE8`?
+19370	Hmm...did those comments never make it into master? I swear there was a discussion about this and I saw the comments at some point.
+19370	Sounds like an amazing idea, likely a @mikesherov project?
+19370	Yeah. I have a ticket to do just that in 1.9.
+
+Mike Sherov
+Lead Programmer
+SNAP Interactive, Inc.
+Ticker: STVI.OB
+
+Sent Via Mobile: Please excuse my grammar, tone, and punctuation. My
+thumbs can't create flowery prose.
+
+On Jul 13, 2012, at 5:21 PM, Corey 
+19379	Can you make these API/Documentation compliant? The values need quoting (feel free to fix any others like this as well)
+19383	If you replaced the space with a comma, this string could be easily copy-pasted and used in `grunt custom:<paste>`. What do you think?
+
+Or, perhaps we could include the entire `grunt` command used to create this build in the header comment?
+19390	That ungood grammar still is
+19390	Yeah, I cringed at that, but if I started on grammar I'd be busy for a while.
+19392	I'd like to see this condition go a little bit further and only convert *canonical* representations to numbers: `jQuery.isNumeric( data ) && +data + "" === data`.
+
+Even if we believe that people are taking advantage of conversion from exponential formats 
+19392	I had that version as well but the broken unit tests made me wonder. The good thing about doing that would be it also fixes some hex-style strings like 12E4 that might get converted to numbers. 
+
+One way to look at it is that we just keep dialing back the
+19392	Sure. Anyone who insists on a number instead of the string we gave em can just unary `+` and move on. Anyone who insists on a string instead of the number we gave em has to fork their logic.
+19401	`(!offsetParent)` => `( !offsetParent )`
+19401	I'll just do this as `return offsetParent || document.body;` anyway, but we still need a unit test.
+19403	`keys` is already declared, but not assigned, please remove the `var`
+19409	Looks like an indentation issue here?
+19409	nope, it's consequence of removing try... catch
+19417	For the sake of readability, can you re-format this so there is no break-up from the `if` to the `else if` - thanks
+19417	Done.
+19427	very nitpicking, but maybe this should read "window elements" instead of "windows" to make things 100% clear
+19427	Fine by me, I just moved the comment that was already there.
+19456	`"t");` => `"t" );`
+19456	`("div");`
+19465	This seems overaggressive... shouldn't `build:*:+effects` include `css` rather than exclude `effects`?
+19465	hmm, that's interesting. The initial assumption was to go with the rule of exclusion trumps inclusion, so I followed that to the extreme, accidentally. What should happen if I do `build:*:-css:+effects`? I suppose explicit exclusion trumps inclusion. I me
+19465	I'll amend now, thanks for the feedback
+19465	@gibson042, updated.
+19465	:+1:
+19470	wouldn't `this.nodeType % 10 === 1` work and be shorter?
+19470	same question as above.
+19470	@jaubourg Clever but less clear. Isn't that smth a minifier should handle though?
+19470	@jdalton a minifier probably shouldn't do stuff like this. See: `"11" % 10 === 1`. It's safe here because we **know** `nodeType` is always a number.
+19470	`this.nodeType % 10 === 1` is shorter only for plain and minified versions. Gzipped file will have the same size as for `this.nodeType === 1 || this.nodeType === 11` 
+
+#### Sizes - compared to master
+
+    251386       (+10)  dist/jquery.js                
+19470	Minified/gzipped is the main target when size is concerned. Was just shooting in the dark here.
+
++5 is perfectly acceptable in my book but we need a unit test.
+19472	add space => `css: {`
+19472	=> `left: 1 }`
+19472	Every line from 407 to here needs a space between the last closing double quote and the it's right side, closing paren - thanks :)
+
+
+(they were wrong before, so let's clean em all up!)
+19472	Nice, this is so much better then buried var initializers between assertions.
+19472	=> `if (`
+19472	=> `ok( exec, "Click executed." );`
+
+
+It was probably wrong before, but like I said about, we can clean them all up as we go :)
+19478	`jQuery.fn.width`
+19478	Good point. 
+19484	Excellent; this is much nicer than the way I had it and almost the same size. You can save a byte gzipped by testing `scale !== 1` first, for a total size increase of 35 bytes.
+19484	@mikesherov Should be .css("width") instead according to #810?
+19484	Same here
+19484	should be `parseFloat( .css("width") )`, correct! Good catch @staabm 
+19484	yup.
+19484	I think this would be better to just always calculate using `"100" + unit` --- Opinion?
+19484	I think if the `unit` is `"%"`, using `100%` to get the `scale` makes sense, and is always accurate enough from the get-go. The question is for other units. `100` might suffer from the same precision issues if the unit is anything else. 
+19484	This loop will continue until it reaches the target or hits a cycle, so it won't fail on precision. However, we might run into problems from something like `font-size: 100em` or `opacity: 100`. And even if we don't, I suspect (without evidence) that it's 
+19484	One more thought... we never want this auto-doubling value to get confused with a "real" scale, so this should be `"0.5"` or `".5"` (whichever is smaller) to ensure type mismatch in the `while ` comparison.
+19484	@mikesherov Done!
+19484	@gibson042 Done - the gzipped version is the same size with either version, `".5"` is one byte less otherwise. Thanks!
+19484	@gibson042 Done!
+19484	Wait, @gnarf37, are you simply saying to set `start = 100` and still do the loop, or are you saying something else? Because if you're saying the former, then it would be easy enough to assuage @gibson042's fears by writing a test that sees what happens wh
+19484	I'm more concerned about unitless numbers like opacity. Would you accept this pull as-is @gnarf37, or do you still think it should change to `start = 100`?
+19484	I'm okay with it as is, my suggestion was just to always test 100 + unit and skip the iterative loop, not 100% sure of how this impacts issue, and it seems gibson/mike have done more research on it.  If they say the way it's done is good, I'm inclined to 
+19484	Great, let's merge!
+19503	Please use double quotes
+19503	General style guide issues here... indent width - please use tabs, not spaces, use of single quotes, function arg padding, etc. Please read http://docs.jquery.com/JQuery_Core_Style_Guidelines and correct any issues you may have 
+
+
+
+19503	Why did you remove the whitespace?
+19503	`ns` is leaking globally because you've not initialized anywhere
+19516	The order for options you choose seems as random as the one we had before. Why not put them at last in alphabetical? Or is it the proper order for better compression?
+19516	The latter. In this case, I'm pretty sure that the run of similar values compresses well.
+19516	:clap:
+19520	`rposition = new RegExp("^("+jQuery.cssExpand.join("|")+")$", "i"),` is only one byte bigger!   :trollface:
+
+19520	Wait! You're right. What about `cssExpand` instead of `jQuery.cssExpand`?
+19520	Hah, STILL one byte bigger. I think gzip is the real :trollface: here.
+19532	Interesting -- I wonder why that was being explicitly coerced...
+19532	nice
+19532	Are there any performance consequences of using `jQuery.css()` in these five calls?
+19532	Still need the unary `+` before `ret[1]`, there is even an open ticket about it.
+19532	YES.
+19532	I explicitly removed the jQuery.css for performance. This is a tight loop in animation.
+19532	I was in the middle of this. This can be reduced even further by combining with the return value on the next line.
+19532	@mikesherov cool - we should add a comment line with the ticket number
+19532	@mikesherov haha, yikes! thanks for info :)
+19532	Yes, I'm very interested to find out environment + circumstances that cause this to fail, because I thought it was really solid.
+19532	Shoot, you're right. It's got to go.
+19532	Sorry. :S
+19532	Actually, it's impossible that this is effecting, right? I think this is OK, and perhaps the ticket I was thinking of was mentioning that this was OK. Let me find it.
+19532	No big deal. It was worth a shot! Perhaps we can move the parsefloat stuff to curCSS... although it would be dfined twice, it may still be a win.
+19532	No big deal. I was only mentioning it because I wanted you to know there was more that can be done! No one owns the code ;-)
+19532	here it is: http://bugs.jquery.com/ticket/10617 And here's why we thought it stays at the time: http://bugs.jquery.com/ticket/10617#comment:2
+
+Although, multiplying two strings is unambiguous... I think it may be fine.
+19532	if we're going to go this far, should we also do:
+
+```
+return jQuery[value === undefined ? "css" : "style"]( elem, type, value, extra );
+```
+19532	There's no benefit after it passes through gzip. We can trim off two bytes by adding a private parameter to `.css` and returning `jQuery( elem ).css( type, value, extra )` here, but I'm absolutely **not** getting behind that mess.
+19536	Replying to https://github.com/jquery/jquery/pull/785#r850556 :
+Until we have something like [`shared`](http://irc.jquery.com/%23jquery-dev/%23jquery-dev_20120420.log.html), I don't see any other way to achieve the necessary results for code like this tha
+19536	But honestly, I think I prefer it this way... `defaultDisplay` is the kind of thing that might be conditionally replaced in client environments offering a better way.
+19536	In that case, if you think it could be temporary, let's call it _defaultDisplay to mark it as undocumented.
+19536	`jQuery.css` -> `curCSS`
+19536	`jQuery.css` -> `curCSS`
+19536	`jQuery.css` -> `curCSS`
+19536	I agree with @rwldrn , no reason to expose this on the object. Let's make sure once Rick removes the IIFE's that we make this private. I can't imagine anyone droppping in a defaultDisplay replacement.
+19538	ohhh this is neat :)
+19538	Do me a favor and drop a line break in before these two lines - thanks
+19538	Can you find another way to do this? There should be zero new API exposed.
+
+I'm going to work on removing the IIFE wrappers this week - which might ease this.
+19538	See notes above
+19554	Yay!
+19567	@rwldrn @dmethvin - Anyone object to this style?
+19567	@gibson042 @mikesherov - I think you two are the only ones who might be able to give a solid opinion on this change.  I moved `tick` outside of `animation`. I don't think it needed to be in there for any reason.  It is still possible to override with your
+19567	Since `jQuery.fx.timer()` is a new signature, does anyone have any thoughts about changing it to:
+
+```javascript
+jQuery.fx.timer( tick, element, queue, animation )
+```
+
+Just thinking for people overriding with their own tick functions, having to extend th
+19567	I never object to readable code <3
+19567	What are the use cases? If we don't expect to expand the signature then i definitely like four args vs the verbosity of `$.extend`. 
+19567	I thought we were just talking about the multiline style. *shrugs* sorry!
+19567	I'm usually in favor of 3 args or less before I switch to options array. I mean, it's sort of arbitrary to me. Whatever eats the least space, I suppose.
+19567	I think that we should do what maximizes developer happiness here. One of the stated goals of this rewrite was to enable a dev to drop in another timer or hook easily, so if necessitating a prefilter to provide your own timer is unnecessarily cumbersome, 
+19567	Well, we can leave it here for now and then try to demo up some use cases with this new stuff and see if we get upset that its missing.... Its easy enough to put it back in.
+19567	@dmethvin - It's a function that adds a "timer" function to be called by the jQuery animation timer loop.  `tick` is a function that is expected to return a number of ms til the end of the animation (for support with rAF maybe?) or 0/false to "remove" its
+19567	@rwldrn we were - I just was wondering if it made sense / was readable.
+
+@dmethvin also - use case wise... If I was implementing a complete animation override, I still need to add a `timer` function to hook into `stop`
+19567	1. I like the style.
+2. Don't change the signature of `jQuery.fx.timer`... doing so would break the `elem`/`queue`/`anim` symmetry between `Animation` and `.stop `, and hide the fact that those values are actually placed right on the tick functions.
+ * ..
+19567	I can think of sufficient plausible (if unusual) reasons for keeping it as a property to prefer it that way:
+* measuring actual frequency
+* calling a `tick` early
+* suppressing `tick`s
+* conditionally ignoring or inserting a special Tween
+* forcing `perce
+19571	cc @gnarf37 
+19571	Should this be `.animate({ opacity: to }, speed, easing, callback )` ?
+19571	or maybe
+<pre>
+.animate({
+    opacity: to 
+}, speed, easing, callback );
+</pre>
+What is the right way?
+19578	I'd prefer to see this test without the DOM manipulation. What about
+```js
+expect( 3 );
+
+var $form = jQuery("#testForm"),
+  $detached = jQuery("<div/>");
+
+jQuery("#qunit-fixture").add( $detached ).on( "submit", "form", delegatedSubmit );
+
+// copy
+19578	+1
+19578	Thanks @gibson042 , I like it!  This is my first time working with the jQuery unit test framework; I didn't notice the existing form in index.html.
+19578	`noSubmit` should be removed with `.off` in the cleanup step.
+19578	@gibson042 Good catch - thanks.
+19578	Comment need to be fixed
+19581	Please review the Style Guide here: http://docs.jquery.com/JQuery_Core_Style_Guidelines
+19581	@rwldrn I updated the unit tests to conform to the style guide.
+19597	This is certainly better than a failing test, but I don't also like unit tests that are tautologies. It's going to be true because it's literally a copy of the function body. However, I can't think of a better way to test this. Can you?
+19597	Yeah, I'm not particularly a fan of it either. We could test to make sure innerHeight exists or something, but at that point we're going all the way around our elbow to get to our pinky. And it still really means the same thing. :/
+19597	Maybe just store the height, scroll and compare the new height with he stored one?
+
+As the originally bug was described this should fail without this fix...?
+19597	No, that wouldn't work either. On iOS, the window.innerHeight changes when you scroll. On other platforms, it does not necessarily. So sure, we could write a passing test like that for iOS, but it would fail on all other platforms.
+19597	And what about scrolling a few pixels at first (so toolbar disapears from the screen)... ?
+19597	I don't understand what you're trying to say. Care to elaborate?
+19597	Did a small test:
+
+http://www.howtocreate.co.uk/tutorials/javascript/browserwindow
+
+The innerHeight only chnages as long as the browsertoolbar is visible.
+When the document is scrolled down and no browser chrome is left, the height will stay the same
+19597	Right, I understand what you're trying to do *however* if we expect the two height values to be different then this test would fail in all browsers that don't adjust their innerHeight on scroll. So, yes, that would pass for iOS, but fail for everyone else
+19597	Hmm this fix will only work for height but will break width?
+19597	Comment no longer applies to code
+19597	DOH! You are correct, good sir. A fool is me. I'll patch that.
+19597	Good catch, I'll nuke it.
+19597	Make sure you add a test that would've caught the bug @staabm mentioned. Thanks for your hard work. 
+19597	I think I forsee another test tautology in our future. heh. -.-v
+19597	Since the test is a bit weird, should the issue been mentioned in a comment / test message?
+19597	What did you have in mind?
+19597	Just a link to this issue here
+19597	I'm down for that. I'll add the comment.
+19616	There is a mix of tabs and spaces here
+19616	There is a mix of tabs and spaces here
+19616	There is a mix of tabs and spaces here
+19616	Where is the default for `type` set? Looks like you deleted that line, but didn't do an assignment anywhere else
+19616	How does line 199 - 217 affect the ticket?
+19616	Looks like you removed a chunk that was marked as a bug fix?
+19616	This behaviour seems to also be missing now...?
+19616	To resolve the ticket, this changes are needed 
+19616	"type" is optional parameter (just like action attribute for form element), if omitted, "GET " will set by default – http://api.jquery.com/jQuery.ajax/ 
+19616	This behavior now in done function, not in complete method, dataFilter function will be already applied, if specified.  This is why none of the test are broken
+19616	Since i modificated this method anyway, i decided to yanked some bytes and make a couple optimizations, is it a bad intention?
+19616	Yes, and that's the only change actually needed. Please, make a pull request that is focussed, THEN make a different pull request to deal with size issues.
+19616	It's good intention, it's just very bad from a maintenance point of view.
+19616	Also, complete and always callbacks do NOT have the same signature so you won't call with the arguments in the correct order.
+19616	@jaubourg why you always so hard on me all the time? I just trying to make a good contribution. Why you need two nearly identical PR? They will depend with each other. I'm sayin this pull is for solving the ticket and to make a small optimization, this is
+19616	Yes, i know.
+Before it was like that – 
+<pre>
+complete: function( jqXHR, status, responseText ) {
+…
+self.each( callback, [ responseText, status, jqXHR ] );
+</pre>
+
+You actually change sequence of arguments for callback function.
+But now, always()
+19616	From a maintenance point of view, it doesn't make sense to change a whole bunch of code unrelated to the ticket the commit/PR is supposed to fix. It makes it very hard when looking at things months later to pinpoint where the fix actually is.
+
+I'm not b
+19616	Also, your PRs won't depend on one another: make them in separate branches, we'll take care of merging.
+19616	Ok, thanks for the link - but I think you misunderstood the intention of my question, which is my fault for not being clear. 
+
+In your patch, you removed the [line](https://github.com/jquery/jquery/pull/758/files#L0L174) where `type` was being set to "G
+19616	It's a good intention, but should be in another pull request. Please separate the bug fix from the code size changes.
+19616	I doubt it's the same when there's an error, but I may be wrong.
+19623	Add in the deprecated reference, so that I can test & merge this ;) Nice work as usual :)
+19623	Testing for stateString saves 1 byte ;)
+19623	Cool. I'm out of town until Tuesday, but I support both this change (with comment about i <= 1) and re-deprecating isResolved/isRejected. :)
+19640	Typo iff
+19640	Wouldn't it be more performant to test for hasCallback first, then chain the conditions, rather than having the tests made upfront in the variable declarations?
+
+    if ( hasCallback ) {
+        if ( rjsonp.test( url ) ) {
+            s.url = url.replace(
+19640	http://english.stackexchange.com/questions/62067/is-iff-considered-a-real-word-or-just-an-abbreviation
+19640	That @gibson042, even his damn comments are optimized! I understood it to mean "if and only if" as well.
+19640	Doh! ;-)
+19640	Unfortunately, we need to know that our conditions pass before requesting `callbackName` from a function (because of side effects on `s`), and we need `callbackName` for the regex replacement value, so the order really does have to be 1) test url/data; 2)
+19652	Unfortunately, this isn't addressing the issue that was being addressed previously, take a look:
+
+<img src="http://gyazo.com/b0d62d3ed41f4b17542effa349112d47.png">
+19652	This is where it is called: https://github.com/jquery/jquery/blob/master/test/data/testinit.js#L91
+19652	Okay, lets back that out for now. We can clean it up later.
+19662	Two more bytes could be gained by replacing this test with `if ( tuple[3] )`, but that would be ever-so-slightly slower and make less obvious the acceptability of `tuples[ 1 - i ]` three lines down. For that matter, the `1 - i` there could just as easily 
+19662	I agree that it's clearer as-is, your variable name changes in general made things easier for me  to understand so I wouldn't give that up for 2 bytes. 
+
+Just to note, this is one of the areas where CCAO changes things to eliminate the quoted method names
+19662	This is a change in API. For instance, .promise( true ) in particular does not yield the same result.
+19662	I used a for... in loops for the sake of optimisation. Everything that is in the code path to create a Deferred or in $.when, I'd like us to treat more from a performance point of view : this code can quickly become a bottleneck in applications using Defe
+19662	I understand the intent, but jQuery.each is an order of magnitude slower than a for.. in loop. Is the loss in perf worth the gain in bytes?
+19662	Lots of noise in this rewrite: would have been nice to refrain from re-ordering functions and variables and to rename them so that what's being done is a bit more obvious.
+19662	Most of the non-observable values will be detected by a simple args[ i ].promise without the need to call jQuery.isFunction. Big performance gain, especially in old IEs.
+19662	Don't get me wrong, most of those renames make the code easier to read/understand but they just hide what's being done to gain size.
+19662	Really like what you did there.
+19662	I thought they were required as some sort of burnt offering to gzip, in order for it to smite a few more bytes.
+19662	That's an interesting observation. I'm going to revert this block, but think it merits more discussion. I'll also readdress the performance bottlenecks, because you do have a point there.
+19662	The delta here is 11 bytes, and this block is only executed on initial creation of a Deferred. I think it's worth a small difference.
+19662	^ This.
+19662	@jaubourg, can you tell me why we `.resolveWith( deferred )` but `.notifyWith( promise )`? Standardizing on one could really simplify the synchronization code.
+19662	Using promise always would be preferrable actually, so +1.
+19662	I understand, except this code will be called all over the place: the Deferred creation path IS critical (think $.when and .then and how they'll be used all over the place in a real-life app). People expect Deferred creation to be somehow immediate and we
+19662	Actually, [we can](http://jsperf.com/jquery-pull-743). For the block in question, `.each` takes roughly twice as long as `for...in`. But in terms of absolute speed, even the worst browser in a virtualized environment can run through it in 35 microseconds.
+19662	I think you misunderstood me, I expect $.each to be roughly 40% slower than a for...in, but I was talking about real-life perf where people use $.when and stuff like that everywhere. Dunno, maybe I'm over-thinking this.
+19673	Needs space after `//`
+19673	`function ()` => `function()`
+19673	Missing semi-colon
+
+
+Is this intentionally not missing the executing parens?
+19673	Will this be exposed publicly?
+19673	`function ()` => `function()`
+19673	Will this be exposed publicly?
+
+
+`function ()` => `function()`
+19673	`function(jqXHR, settings)` => `function( jqXHR, settings )`
+19673	`function(jqXHR, textStatus)` => `function( jqXHR, textStatus )`
+19673	`function(data, type)` => `function( data, type )`
+
+I'm going to skip the rest... there are plenty.
+19673	style nit
+19673	Is this exposed publicly?
+19673	jQuery has `jQuery.Callbacks`, is this also exposed publicly?
+19673	Too many vars now
+19673	Too many vars now
+19673	This sucks to read
+19673	What's with the grouping parens around `jQuery.each`?
+19673	style nit
+19673	style nit
+19673	This is terrible to read. 
+
+Ditch the underscores.
+
+Needs padding spaces for readability
+19673	Again, what's with the grouping parens?
+19673	Grouping parens?
+19673	This is almost unreadable.
+19673	Unreadable
+19673	Why?
+19673	Why?
+19673	Why?
+19673	Why isn't `jQuery.fn` being used?
+19673	`( {` => `({`
+19673	Grouping parens?
+19673	This makes a simple variable declaration list nearly unreadable. It actually looks like there is important program logic here.
+19673	`content ,` => `content,`
+19673	Numbered arguments are awful... These need to be given something meaningful - also, I don't understand why they've even been named as formal params, while not actually used by name.
+19673	Is there any explanation for this?
+19673	Seems unnecessary.
+19673	style nits
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN19-28
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN1-8
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN12-21
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN1-6
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN16-25
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN1-7
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN14-23
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN1-8
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN17-26
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN1-9
+19673	Just because it's not the source, doesn't mean it shouldn't follow the style guide LN14-23
+19673	I don't understand why this was moved from testinit.js to this file? What was the benefit?
+19697	`"interactive") {` => `"interactive" ) {`
+19697	`setTimeout( function() {` => `setTimeout(function() {`
+19697	`function(){};` => `function() {};`
+19697	`== "interactive") ) {` => `== "interactive" ) ) {`
+19697	It's so funny, every time I move code from one place to another in the test suite, it's got style issues. Fixing in a bit. Thanks for the eagle eye as usual.
+19697	Do you really want to fall through this? Trying to wrap my head around this since we're also in a `!== "loading"` situation now.
+19697	yes, I do. I can't do the check for `complete || (quickReady && interactive)`  here because there is no way to set `jQuery.quickReady` before `bindReady` when jQuery is loaded asynchronously. So I just check if it's not loading. This allows the user to se
+19697	Great explanation. I figured it was okay, seemed too obvious to be a bug.
+19697	Well, we only started enforcing style in the tests about a year or so ago, so there is a lot of cleanup of old stuff ;) 
+
+
+And of course, thanks for helping to cleanup old stuff along with new stuff
+19697	no problem!
+19697	@miketaylr, thought you might be interested in this...
+19697	So this bug doesn't exist in Opera Next, presumably?
+19697	I have not tested in next.
+19697	It would be helpful, if you get a moment. -> http://www.opera.com/browser/next/
+19697	No problem. Will do shortly, and report back.
+19697	@miketaylr, still happening in Opera Next. To summarize: when a sub-resource like an IFRAME takes a while to load but the DOM of the page is ready, the other browsers report "interactive" as the readyState, while Opera reports "complete". 
+
+Specifically
+19713	`if (jQuery.cssHooks[ fx.prop ])` => `if ( jQuery.cssHooks[ fx.prop ] )`
+19713	Indenting is incorrect
+19713	Sorry, I tend to deal with a mixture of 2,3,4 spaces and/or tabs for indenting between JS and Perl.  Drives me crazy...
+19713	No need to apologize, there is a reason @rwldrn makes those comments so well.  He's had a ton of practice from the rest of our pulls ;)
+19713	+1! And my own mistakes!
+19753	`name.charAt(0)` or... `name[0]`?
+19753	I suppose I can do `name[0]`. I have no preference, and it's a win on bytes.
+19753	`if( name in` => `if ( name in`
+19753	https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/String#Character_access says IE6 and IE7 have a problem with array-like access.
+19753	Good call, but I'm not sure IE6,7 ever need to go into this function
+19753	Right, they don't technically NEED to, but  they go into it anyway because I still test for prefixes in those browsers. It's 1 test per property name, and it makes the code small as possible without having to feature detect IE6 and IE7.
+19753	But this adds a call to the stack for poorly performing browsers :\
+
+
+I'm thinking the net win in your other PR affords you a few bytes if you need them
+19753	Sure, but adds 1 call to the stack only the first time for any property. It's actually a win on repeated calls because it's only one property access instead of 2, but I hear you. Any suggestions on how I might detect that a browser has no vendor prefixes 
+19756	I know it's not an issue, really... but drop the trailing comma
+19764	Wrong style. Please read the [jQuery Core Style Guidelines](http://docs.jquery.com/JQuery_Core_Style_Guidelines).
+
+Correct:
+`if ( rnotwhite.test("\xA0") ) {`
+
+Also applies to the other if statements.
+19764	The original is wrong too then ;)
+19764	@rwldrn did we decide to remove the style exception for spaces around quotes within parens? TBH they have always confused me too; I know there was some recent discussion.
+19764	@dmethvin Correct, we switched to no spaces around single string args.
+19764	There shouldn't be a space before the arguments list: ".test` `("
+19764	Please update to match the latest style guide, thank you!
+19776	Some mobile browsers that still have usage don't have getBoundingClientRect(). We need to feature test that. I know it's not part of jQuery's official browser compat statement, but it needs to happen. 
+19776	Oh, I thought the whole point of Pull Request #642 was that they all had `.getBoundingClientRect()`, should I do `$(container.firstChild).offset()` instead?
+19776	all have getBoundingRectClient OR the webkit convert. Just do a check for existence of the function before invoking. 
+19776	oh sorry, didn't see this. I just did `$(container.firstChild).offset()`, that's still fine, right?
+19776	you shouldn't really be calling jQuery functions in support. Instead, you can do something like:
+
+```
+var offset = container.firstChild.getBoundingClientRect ? container.firstChild.getBoundingClientRect() : { top: 1, left: 1 };
+```
+19776	P.S. I know this looks like a lot more code, but gzip will compress this nicely. And thanks for working through all the changes and suggestions. I'm still not sure if this pull request will get merged in, but it's important that we at least get to an opti
+19776	How does the absolute check prevent infinite loops? Can you make a unit test for this as well?
+19776	wouldn't swapping out `fixed` for `relative` give the wrong coords here? I'd think you need to unit test all the possible `position` values to make sure all cases are covered, both already existing at 0,0 and at some other offset.
+19776	no, thank _you_ for so thoroughly reviewing my mistake-ridden code and suggesting all these changes.
+
+Although, looking at how slim the diff is now, and considering we are able to get rid of (what I was calling) `getOffsetSlow`, why wouldn't you merge thi
+19776	it would've infinite looped when `elem` was actually at  0,0, because `testEl` would be 0,0 as well and it would try adding a test element to `testEl`, _ad infinitum_
+19776	that was a mistake, thank you for pointing that out. I must have forgotten to rerun `make` or something, that doesn't work at all.
+
+If `elem` were `position:fixed`, or in fact anything but `static`, it would be the `offsetParent` of `testEl` anyway, the o
+19776	What about a relatively positioned element at 0,0?
+19776	perhaps this should be 
+
+```
+offset = testEl.getBoundingClientRect();
+```
+
+that way we don't have to worry about the infinite loop at all.
+19776	then `testEl` would be absolutely positioned, so `getOffset( testEl, ... )` would not recurse.
+19776	got it!
+19776	wouldn't I have to duplicate the below code that makes corrections to `.getBoundingClientRect()`?
+19776	you know what, you're right. I guess I'm too tired to be making good suggestions. Sorry for the noise!
+19776	on the contrary, that was a great suggestion, I just simplified the code because of that
+19776	I'm just really trying to help make this PR as small as possible to increase it's chances of being merged for 1.8, where we're really trying to focus on size. Sorry for the continual nudging and questioning each line.
+
+Are all of these css properties need
+19776	Lastly (I promise!), you can do 
+
+```
+offsetSupport.zeroOffset = false;
+```
+
+before the `if` and ignore having an `else` altogether! Should save a few bytes actually.
+19776	you're completely right, I assumed it was the content box
+19776	instead of prepending to `body`, you should prepend to `#qunit-fixture`.
+19776	rather than add some real html and then selecting it, you should do what you did in your other tests, create some arbitrary html with jQuery, and append it to `#qunit_fixture`. I know that you're just following examples in the tests here, but it's somethi
+19776	am I guaranteed `#qunit-fixture` is `position:static`?
+19776	Thanks for being so responsive to the suggestions!
+19776	interesting question. I'm not sure really. Leave this one as is I guess.
+19776	Well, I can save even more bytes (post-minification) by doing
+
+    var getBoundingClientRect = "getBoundingClientRect", offset;
+    offsetSupport.zeroOffset = getBoundingClientRect in documentElement && (
+      container.innerHTML = "<span style='marg
+19776	no, it isn't. A balance should be stricken. Up to you here. I think skipping the else is a win on bytes with no readability downsides.
+19776	How about
+
+    var getBoundingClientRect = "getBoundingClientRect";
+    offsetSupport.zeroOffset = false;
+    if ( getBoundingClientRect in documentElement ) {
+      container.innerHTML = "<span style='margin-right:-1px'></span>";
+      var offset = conta
+19776	yeah, I remove it afterwards anyway
+19785	typo here?
+19785	No, the "div" text is just a shim, it can be anything.  I use "X" to shave off the two characters.  It would ideally be something like "shim" if every byte of jquery didn't translate into petabytes of internet traffic.  Personally I found it more confusin
+19785	You could try changing `X` to `c` to check if the GZIP algo will better optimize the `c<d` part of the string - which is used several times throughout the minified jQuery 1.7.2 source.
+
+&lt;/bikeshed>
+19785	My tests show that switching it from "div" to "X." shaves off one gzipped byte.  I tried "c" and even ">" and got the same number of bytes as "X".  
+
+And actually I appreciate the reminder to think about gzip results.  Byte count, compressed or uncompre
+19791	`(jQuery.support.zeroOffset ` => `( jQuery.support.zeroOffset `
+19791	my bad, fixed in b08e417
+19791	what if the element really has offset of 0 and 0, then this fallback is unnecessary. Perhaps consider checking the style to make sure it's inline first before falling  back?
+19791	Well, prioritizing correctness over performance, I wanted to be sure not to miss any cases where the fallback is necessary. I do already know that it's not necessary for the element itself to have the negative margin http://jsfiddle.net/cEUun/2/; are you 
+19791	I'm not sure of anything. I'm just asking questions. 
+19802	`if(` => `if (`
+19802	Instead of creating two points where the `value` is determined, just modify the above statement:
+
+```js
+value = jQuery.isFunction( value ) ? value() : ( value == null ? "" : value );
+
+```
+
+this matches both `null` and `undefined` and means no changes to l
+19802	If you're going by http://bugs.jquery.com/ticket/8653#comment:17 then this is wrong and should be:
+
+`param1=`
+19802	If you're going by http://bugs.jquery.com/ticket/8653#comment:17 then this is wrong and should be:
+
+`string=foo&null=`
+19811	I like @jaubourg's proposition better:
+
+    !/^margin/.test( prop )
+
+19811	As you can see in the jsperf, it's a lot slower. Didn't think it was worth saving a couple of bytes over performance?
+19811	Over-optimization kills. These conditions are tested only 9 times when jQuery is loaded in the page.
+19811	Not only is louisremi right about the non-critical aspect of this code path, but perf results seem more mitigated once you store the regexp: http://jsperf.com/indexof-vs-regex2/2
+19811	Clarity, correctness, and unit tests are what matters here. Size and performance are just noise in this case. 
+19811	Based on a balance of the results in @jaubourg's perf case, please use a cached regex. I'm painting the shed pink. End of story.
+
++9001 to @sindresorhus for writing tests 
+
+
+19811	@rwldrn Done :)
+19827	how does the regex perform vs the strict comparison?
+19827	Again, I want to see how this performs. Should be benched against a high number of elements
+19827	@timmywil has some perf tests somewhere that show `typeof ` comparisons performing better then coerced values 
+19827	Why another function call on the stack?
+19827	Can you explain this change?
+19827	To save `jsTags.length` loop iterations, each with its own redundant `jQuery.nodeName`, `script.type` test, and `scripts.push` or `fragment.appendChild`—all of which have the same effect on the call stack.
+19827	`buildFragment` only uses its second argument to get a `document`, so there's no reason for it not to just accept one directly, making array creation here unnecessary.
+19827	But the inlined version could avoid doing work it didn't have to do, eg. scripts. Now you have them all being processed through functions - and yes, `handleScript` does check `script.type`, but after we've already entered another function scope and asked 
+19827	Right, but I'm not interested in that - I want to know why you changed a method that is accessible publicly, despite my warnings that user _do_ _use_ these - whether they should or not.
+19827	Slightly faster. http://jsperf.com/binary-regex-vs-string-equality
+19827	Because I did so without harming backwards compatibility. Previously, `buildFragment` sought a document from the `0` property of this argument, or used the global `document` if that didn't work. After this change, it still does that but is *also* able to 
+19827	Can you add a comment that outlines the handling and overloading of the API - thanks.
+19827	Actually does significantly better across the board: http://jsperf.com/binary-regex-vs-string-equality/2
+19827	What are you talking about?
+
+**Old method:**
+Look at current element in `ret` and
+   * If we're collecting executable scripts AND this element is one, detach it and push into the scripts array
+   * Otherwise,
+     1. Find all descendant executable scripts
+19827	Other than the one at https://github.com/gibson042/jquery/blob/571cc6baa56fb8559a7ae860ee74093ee8a85832/src/manipulation.js#L465? What are you looking for, and where? I have never seen documentation for these internal interfaces.
+19827	I didn't say document, I said comment. Yes, that comment you linked to is sufficient - you'll have to forgive me, this diff is not easy to review.
+19827	Agreed. The source started off nasty, and I really pounded on it further. But hopefully to its benefit.
+19827	I'll finish reviewing this tomorrow
+19827	Instead of `makeArray`, you could simply do `merge([], ...)`. It saves few bytes, and should be faster (less function calls).
+19827	Ok, fresh head...
+
+I was referring to the logic that was previously inlined:
+
+`(!script.type || rscriptType.test( script.type ))`
+
+...that is now in `handleScript`. With the inlined version, we're spared the call to `rscriptType.test( script.type )` if no
+19827	Allright, I'm with you now and acknowledge the possibility that this code is slower in dealing with top-level script elements (noting, however, that avoiding double-checks against `nodeName` and `type` for descendant script elements could easily tip the s
+19827	@rwaldron we should jsperf this and see if the impact is that big. Would you have a reasonable "real-life-like" stress test?
+19827	@gibson042 would you stop answering before I ask?! ;) :P
+
+Damn, I feel old and slow.
+19827	@dmethvin traditionally uses the new york times home page as a "real world example". True story.
+19827	I can't put this together right now, but would greatly appreciate someone else doing so.
+19827	@gibson042 thanks for compiling that information, super helpful. I can't get to this today, but I will surely try to work with this data ASAP... (please do the same if/when possible :D )
+19827	Testing this overwhelmed my Firefox installation and polluted those results, but I'm willing to declare real-world performance a draw—at least on Chrome. http://jsperf.com/2012-03-07-jquery-clean-11325
+19827	New jsperf version includes @rkatic's `makeArray` → `merge` optimization and features improved test code isolation and charting. http://jsperf.com/2012-03-07-jquery-clean-11325/2
+19827	`jQuery.grep` is not safe with domlists (IE 6/7). You should use `makeArray` or `merge` as in L741. (not your fault, just munged code).
+19827	You are correct in general, but I'm 99% certain that *this* call is safe. It is replacing code of the same form ([old L578](#L1L578)) , does not mutate anything other than property values, and passes unit tests.
+19827	Since when current unit tests gives the 99% certainty of bug-free code? ;)
+19827	I also think this is safe, or more accurately, it's as safe as it was before... as @gibson042 points out, the exact same code exists before
+19827	 > it's as safe as it was before... as @gibson042 points out, the exact same code exists before
+
+Yes. In fact I pointed it out that it was not a gibson042's fault. However, what happens with something like `$('<div><input type="checkbox" name="length" c
+19827	@rkatic hope this is helpful: http://jsbin.com/anegem
+
+<img src="http://gyazo.com/0df61cfc3a5c12c1f53ff369e5713bcb.png">
+19827	Now I can sleep in peace again.
+19827	@rkatic LOL
+19827	:D
+19847	jQuery does not, and will not, include "browser sniffing" via the navigator object.
+19855	Were the tests using setInterval before?
+19855	Yes. See for yourself: look at the lines I removed. 
+19855	Sorry, that was lazy... :/
+19855	No problem! I'd rather more comments and questions than less even if the answer is "look down"
+19860	Please refere to the http://docs.jquery.com/JQuery_Core_Style_Guidelines
+19867	This will still leak in the case of nonzero `wrapMap` depth (L691).
+
+It's also right in the middle of https://github.com/jquery/jquery/pull/680. Would it be better to apply a fix on top of (or even *in*) that?
+19867	No, I don't want to muddy the waters between tickets and patches. 
+
+From where I'm standing `div` is re-assigned in the while loop, so whatever `div` ends up being is what gets removed. 
+
+You could also argue that this still allows any elements that are b
+19867	Exactly... `div` will get removed, but the wrapper elements required in special cases will still be left hanging around, and that's the entire complaint of http://bugs.jquery.com/ticket/11356.
+19867	The contents of the `wrap` array is a number (depth) and strings that get concatenated around `elem` during construction and set as innerHTML of the `div` that gets created and appended to the DocumentFragment. The same `div` is then reassigned in the whi
+19867	Yes, do you see how the "After" child node count is not constant between your filtered and unfiltered test suite runs? That is precisely the leak that I'm talking about.
+19867	It's precisely not a leak in the sense you are attempting to portray. The first 23 are necessary for HTML5 elements to work in oldIE: abbr, article, aside, audio, bdi, canvas, data, datalist, details, figcaption, figure, footer, header, hgroup, mark, mete
+19867	Indeed, you have greatly reduced the leak. But every call like `jQuery('<tr class="' + ( new Array(64) ).join("nocache ") + '"/>')` will leave `safeFragment` with another child: the initial value of `div` before its descent (in this case, a `<table>`).
+19872	Can you explain your approach here?
+19872	According to your list #2, won't think just "mark" the property deleted?
+19872	Difference here, with jQuery.cache object, that it would be not be collected by GC, but elemData will and according to my list №2 "so property stored in object eternally, only if it will not be overwritten or if object itself will not be deleted"
+19872	i'm suspecting that IE interacts with (for example) onclick property, when you attaching/detaching click event, but when its custom event, property isn't there, my guess is - after event being removed such property needed DOM GC to collect it. 
+
+19872	This line makes absolutely no sense: when the property is undefined, set it to undefined.
+
+If what you wanna do is control if the property exists, or not. I suppose the idea is to actually have an undefined property on the object  rather than no property 
+19872	I would really like to understand this line before we commit it. Can you point to some page that explains how this check might free memory in IE?
+19872	So are you saying that this change is necessary to make the GC work properly? Or is it just not needed? As I understood IE's garbage collector, it is a bad idea to leave an element like elem in a Javascript object because elem won't be seen as unreference
+19882	Did you read the complete discussion here: http://bugs.jquery.com/ticket/6652 or the original patch https://github.com/jquery/jquery/pull/416? The check for an empty string is very much intentional. **PLEASE** read tickets that are cited before making cha
+19882	How is this an improvement?
+19882	As a matter of fact, I *did* read http://bugs.jquery.com/ticket/6652. And I **also** read the source for `jQuery.trim`, which always returns a string. The equality check may be intentional, but it is not necessary.
+19882	It is smaller (5 bytes gzipped) and saves a redundant regular expression test in the "replacement" case.
+
+That being said, it may or may not be faster. I've opened a [jsPerf](http://jsperf.com/2012-02-14-test-replace-vs-replace-function), and would apprec
+19899	I think you can drop `parseFloat` entirely and just use `+data`.
+19899	You're right, thanks :)
+19902	That is so weird.
+19902	Looks good to me :)
+19907	Switch the first two around to avoid the function call if possible (which has an affect in all modern browser cases)
+19907	What is the purpose of adding the closing angle bracket?
+19907	@rwldrn done, thx for the tip
+
+@timmywil I encountered the issue with an element called &lt;MeterReading&gt; which matched with &lt;meter&gt;, I did however just revised the fix to also match things like &lt;meter/&gt;, &lt;meter        &gt;, &lt;meter 
+19925	I know it's nitpicking, but I think we should keep using Array.prototype, Object.prototype, String.prototype. It's a bit faster and uses a bit less memory.
+19925	This causes a style guide violation and makes it harder to move towards `onevar`
+19925	So... the only reason this list isn't leaking in the test suite is b/c @mikesherov's changes to in include_js.php slightly changed the previously safe assumptions about how files are loaded into the test suite. 
+
+EDIT: This might be beneficial TBH.
+19925	Right, that's interesting. Sounds like we need to change the leak checks, because honestly include_js.php is closer to the reality of the build than the previous "long list of script tags" method. How can I fix it?
+19925	Right, but the assumption that you've made "closer to the reality of the build" was incorrect. The whole design was intentional to encapsulate each module. The fact is that I prefer this way (as you've updated it to) over the previous and even back when i
+19925	Wait, I'm just re-reading this. Moving the defs outside of the jQuery leaks to global? Oh yeah, that's not safe is it? This is an optimization that "breaks" the imaginary closures we built for file modularity, right? But no real effect... Or am I just bei
+19925	Julian and I once battled jslint over setting `rspace` in more then one place. We both agree that making a build step was not something we wanted to do, which is how `rspaceAjax` came to be.
+19925	@mikesherov naw, you're not dense, it's confusing. He broke the third wall, but you're wrapping the sources after you concatenate them. I think it's going to be alright.
+19925	Are you sure this uses more memory? Seems like garbage collection would clean up the transient instances almost instantly.
+
+As for it being slower, you're right... on the order of a [microsecond](http://jsperf.com/prototype-vs-instance). Time parity for t
+19925	This can easily become something like `/*repeat*/ var rspace = /\s+/;`, or the comment can be moved to the preceding line. Would either of those syntaxes be objectionable?
+19925	To be clear, these declarations leak into global scope only when core.js is directly referenced (which should be never). In jquery.js and derivatives, they are inside an anonymous `function( window, undefined )` created by intro.js.
+
+If l'm mistaken about
+19925	Please follow the whole conversation. In a not-so-long-ago version of the test suite (read: less then a month), we didnt use intro.js and outro.js...
+19925	I like the idea of a part of the build that stops pretending each JS file is self-contained. I do have a few issues though.
+
+Unfortunately, try running the test suite from file://, and you'll get those leak warnings @rwldrn mentioned, because the non-PHP 
+19925	On the other hand, 75 bytes isn't something to sneeze at. 
+19932	Did you try... `elem[ 0 ] && elem[ 0 ].parentNode === undefined` (I might have that backwards)
+19932	That would also match plain arrays, which we don't want. I have a better solution in the latest commit.
+19965	No.
+19965	No.
+19965	No.
+19965	No.
+19965	No.
+19965	Initialized, but unassigned vars all go on the same line, at the top of the var list
+19965	`function (` => `function(`
+19965	`function (` => `function(`
+19965	No.
+19965	Do not use `$` in the core
+19965	Do not use `$` in the core
+19965	`positionPercentHack(elem, name, value)` => `positionPercentHack( elem, name, value )`
+19965	This can't possibly work...
+
+```
+return ret === "" ? "auto" : ret;
+style.left = left;
+
+return ret;
+```
+
+19978	intended non-strict check here?
+
+don't know if performance matters, but shouldn't it be faster to check for null first?
+19978	non-strict b/c strict === null breaks bind/unbind/one with data behaviour
+
+The non-coerced typeof check is probably faster, but likely not to a statistically significant degree
+19978	The size increase can be even smaller (+8/3/2) by making this assignment `data = data || selector;` instead of changing the `if` condition.
+19978	Nice one - updated.
+20038	This outerHTML check was added [here](https://github.com/jquery/jquery/commit/7481a3645af63cef1406687190fd62bdfb1bf254) no linked bug so I can't check the original issue. 
+20049	Missing a semi here - compliments of JsHint :)
+20049	@dcherman I'm So Meta, Even This Acronym (IS META).
+20049	Nice! I did this late last night, so not surprised I missed that, will fix shorty
+20053	`i+=2` => `i += 2`
+20053	Per update in http://bugs.jquery.com/ticket/10833 ...
+
+`value.split( " " )` => `value.split(" ")`
+
+
+I'll be doing a sweep for these for 1.8, but we can start updating as we go along.
+20053	Where does everyone come down on code clarity vs. small size? Further DRYing of this method and taking advantage of boolean-to-int coercion can yield the following additional compression with respect to this PR:
+
+```
+  249188   (-385) jquery.js
+   93842  
+20053	Show us on your github and we'll take a look. :)
+20053	@gibson042 just push it up to your own fork and post the link!
+20053	https://github.com/mikesherov/jquery/pull/2
+20060	Not sure why, but the removal of this `isArray` scares me.  I assume you know why you removed it / and that it still works everywhere?
+20060	It's redundant. `typeof v === "object"` would obviously match an array or an object :)
+
+
+And yes, all tests pass 
+20063	Can you do: `(\d+\.)?\d` instead of: `\d*(?:\d|\.\d+)`?
+20063	I meant `(\d+\.)?\d+`, saves 4 min+gzip bytes in each regex. 
+20063	Unfortunately not, because that would fail to accept strings like ".4" without a leading integer component.
+20063	In that case, what about `(\d*\.)?\d+`?
+20063	Now *that* is perfect!
+20063	Please take a look at http://bugs.jquery.com/ticket/1599
+
+I think IE7 barfs when you try to set a negative number to width/height, which is against the spec anyway. This code was put in place to allow a jQuery user to be lazy about what values they are at
+20063	I think we can still do better. I hate to nitpick, but I think it's a worthwhile exercise. I'm not sure why we need the lookahead? Can we do `(\d*\.)?` instead of `(?:\d*\.)?` ?
+20063	See lines 100 through 106... use of this output is wrapped in a try-catch to fix http://bugs.jquery.com/ticket/5509, which better covers #1599 and makes the test here redundant.
+20063	It's not a lookahead, it's a non-capturing match. Capturing subexpressions slightly hurts performance. http://jsperf.com/regex-capture-vs-non-capture
+20063	great!
+20063	fair enough! Can you provide updated size differences using "make size" before and after this patch?
+20069	It's better to include sizzle with
+
+```html
+<script src="../../../src/sizzle/sizzle.js"></script>
+<script src="../../../src/sizzle-jquery.js"></script>
+```
+20069	I haven't looked into the reason, but making that change (using sizzle.js + sizzle-jquery.js instead of core.js + selector.js) regresses the fix.
+20069	use core.js + sizzle.js + sizzle-jquery.js
+20069	Fixed.
+20089	Says who? There is no documentation that claims this to be the expected behaviour
+20089	http://api.jquery.com/jQuery.extend/ specifies the `jQuery.extend( [deep], target, object1 [, objectN] )` signature:
+* **deep** If true, the merge becomes recursive (aka. deep copy).
+* **target** The object to extend. It will receive the new properties.
+
+
+20089	Yes, I've read all of that - thanks. You've still assumed that 'false' should have semantics, despite no expectation in the API or test suite...
+20089	If it's intentional that `jQuery.extend(false, deep3, deep4)` is identical to `jQuery.extend({}, deep3, deep4)`, then why is the block on line 311 already set up to handle `deep === false` according to my proposal?
+
+```javascript
+	var options, name, src, 
+20089	I seem to be getting a lot of resistance here. Would this request be more likely to land if it's treated as a feature enhancement rather than a bug fix?
+20089	Hey @gibson042, the reason you're seeing some resistance is because you've opened two tickets for this that have both been closed as wontfix and duplicate. @timmywil and @rwldrn gave an explanation why this may be breaking behavior here and the fact that 
+20107	I don't think the solution is to make a 5 parameter long signature into a 6 parameter signature.
+20107	Both modes of jQuery.access require: *collection*, *key(s)*, *getter/setter function*. Setter mode additionally requires a *value*, plus toggling of what to do when value is a function (use directly or use return value per element) or undefined (no-op or 
+20107	Per feedback from @rwldrn, I have streamlined the parameter signature of `jQuery.access`, though I am not particularly happy with how it is now called. This touches on a tradeoff between byte count/DRY on one hand and readability/performance on the other.
+20107	`{Height: "height", Width: "width"}` => `{ Height: "height", Width: "width" }` ... but still not sure why this change was made?
+20107	To save 17 bytes in jquery.js and 9 in jquery.min.js. You said in [comment 18](http://bugs.jquery.com/ticket/5571#comment:18) that you'd strongly oppose adding even a single byte of new code, so I was optimizing pretty aggressively.
+20131	Please remove this line. If you allow this, the code will turn into a mess of space and tab crap.
+20131	why not...
+
+```
+lint: hint
+```
+
+And no message?
+20131	I'm finishing that up as we speak...
+20131	sure.
+20162	Cache as an local var?
+`var w = which[ i ];`
+
+http://jsperf.com/unoptimized-vs-optimized-for-loop/2
+20167	Honestly, it makes more sense and is far more readable the other way.
+20185	YAY!
+20192	We should probably stay away from overwriting the native cloneNode here, but I have another thought.  Maybe this could all be shortened to
+
+```javascript
+if ( rnoshimecache.test( "<" + elem.nodeName ) ) {
+    safeFragment.appendChild( clone );
+}
+```
+
+Sinc
+20192	I'll give it whirl
+20192	@timmywil this is the result: http://gyazo.com/2f3c49ecf7300d56171e844745de88cf.png
+20192	@timmywil, good call. I switched to making a function call, instead of overwriting the method
+20195	This can be reduced to:
+
+```
+wrap: function( html ) {
+	return jQuery( this ).wrapAll( html );
+},
+```
+
+20195	This line is unnec. - please remove
+20195	QUnit has deprecated `equals`, please update to `equal`
+20195	```
+var expectedIndex = 0;
+var targets = jQuery("#firstp,#first");
+```
+
+Should be...
+
+
+```
+var expectedIndex = 0,
+    targets = jQuery("#firstp, #first");
+```
+
+20195	Update this to:
+
+`"wrap(Function) with index (#10177)"`
+20207	Please use double quotes
+20210	Don't mix single and double quotes - jQuery uses double only.
+20241	This test should be re-written to show that the correct behaviour happens in _all_ supported browsers. Additionally, an `expect()` call should be made at the beginning, not within a condition - that defeats the entire purpose of setting expectations.
+20241	Whenever possible, append new elements to `#qunit-fixture`. This is super inconsistent across the entire test suite and we're all guilty of it, but we should start to make efforts to do the right thing in new tests. Unfortunately, sometimes tests will req
+20241	Actually, I'd recommend never using `#qunit-fixture` as a selector in the tests.  We should have a container of our own that QUnit doesn't depend on and always use that.
+20241	So, back to body? Let me know and I'll update the PR.
+
+Sent Via Mobile: Please excuse my grammar, tone, and punctuation. My
+thumbs can't create flowery prose.
+
+On Oct 27, 2011, at 4:15 PM, timmywil
+<reply@reply.github.com>
+wrote:
+
+>> @@ -245,6 +245,21 @@ 
+20241	i misread your comment earlier... we absolutely should be appending temporary junk elements to #qunit-fixture, because it's guaranteed that they are cleaned up after every test. #qunit-fixture's sole purpose is to be a place for adding throw away junk ele
+20241	so... to qunit-fixute or not to qunit-fixture... that is the question?
+20241	Use QUnit correctly, put the element in `#qunit-fixture`. Thanks.
+20241	Sorry to confuse you. Rick is right.  For now `qunit-fixture` is the way to go. Body is incorrect. I was making a comment on something that I want to change about all of our tests, but the current HTML in index.html wouldn't allow for it yet.
+20241	No problem, and just so no one is confused any further, we are in a discussion on a line note from a commit that was overridden 4 days ago. I already updated the PR to use `#qunit-fixture` 4 days ago: https://github.com/mikesherov/jquery/commit/7c08794ad7
+20256	Please see: http://docs.jquery.com/JQuery_Core_Style_Guidelines
+20256	 * jQuery uses double quotes
+ * Missing whitespace: `(dest.setAttribute && src.getAttribute)` => `( dest.setAttribute && src.getAttribute )`
+ * Missing empty line above comment
+ * `dest.setAttribute('checked', src.getAttribute('checked'));` should be o
+20257	Removed from core.js because outro is where the jQuery object is "exported".
+20270	it's ok if ret is 0 here right?  maybe this should be ret === undefined
+20270	hmmm... maybe. I'm not sure it's undef... we may also want to be checking empty strings and null as well. checking for 0 is a perf. optimization... so I'm not 100% sure it'll work in all cases.
+20270	I don't think we should check for null and I really don't think we need to check for 0.  Getting a null value would only occur when the specific style does not exist on currentStyle, in which case it should return null.  And 0 can be a valid computed valu
+20270	OK, so just check for undef it is... I'll make sure the unit test passes here. Thanks!
+20270	@timmywil, i just tested this. IE8 returns null in my unit tests... i need to check for null/undefined for disconnected nodes! i can get rid of the 0 check though, i think.
+20270	It's returning null for a non-existent property?  I guess the property exists, but IE chooses to return null on disconnected nodes?
+20270	Ok, then just a check for null should be sufficient.  When you said "don't have currentStyle", I assumed the property was non-existent.
+20270	it returns null for the `currentStyle` property, and the right value in `elem.style` for `background-image` and `top`.
+20277	Setting attributes to empty string should be present in all browsers.  That is not just for IE.  We've actually tried that before and ran into several cases where removeAttribute was inadequate.  As for fixing the name before removing, that may be a good 
+20280	We could reuse the list of nodeNames somehow to create this.
+20301	Don't declare variables inside of conditions. Declare it at the top of the function body and assign it here
+20301	Sorry, I intentionally did it that way because it was done that way already on [line 679](https://github.com/jquery/jquery/blob/master/src/ajax.js#L679), right below this. I'll update it if you want. I thought it was weird, but I figured if that's the way
+20301	You'd need to escape every regexp special characters (think . for instance) in s.data so that you don't have false negative. Talk about a "simple" hack gone wrong in the convoluted department (not to mention performance and memory issues in older browsers
+20302	We should probably be consistent with the way we attach these and the width/height step functions.  Just at first glance, maybe we could consider removing the whole step declaration out so we could end up with
+
+```javascript
+step.scrollLeft = step.scrollT
+20302	Or we could add `width`/`height` in the same manner I did `scrollLeft` and `scrollTop`
+20319	`(arguments)` => `( arguments )`
+20319	Done. Thanks.
+20328	Why are you shimming here? jQuery's support for new elements is _solely_ to provide working `innerHTML`, `cloneNode` and non-collapsed children
+20328	This is way too much code for what needs to actually happen
+20328	Because otherwise you would need to do it in the beginning of the test, like it was done until now. Note that I removed the index.html creation of the html5 elements from the tests setup. That should work out of the box.
+
+This is why I also call createE
+20328	52: As mentioned I need to create the new unknown element using the document as well.
+53: Well, the safeFragment for the contexts is always recreated in the clean method, thus I need to update the shims list. 
+
+56: Since the safe fragment has now some new
+20328	I think you've misunderstood the scope of jQuery's support for unknown elements. The shim in the test was completely _intentional_ because jQuery is not going to provide the shim, as that would lock it's inclusion to the `<head>` of the document.
+20328	The whole approach isn't going to fly. Regardless, the ticket and the topic have been deferred to 1.8 discussion 
+20328	Ok, I will drop that.
+20328	Can you be more specific on "The whole approach isn't going to fly." ?
+20328	As in, your approach to fixing has too many issues, but regardless of that, the entire topic has been deferred until 1.8 
+20343	The space between the Identifier and the `=` need to be reduced to one space
+20343	Can the duplicate logic be consolidated into a single code path?
+20343	Watch for spaces here ;)
+20343	@rwldrn, I'm trying to make sense of the style guide... Am I using too many, not enough?
+20343	Missing space: `if( name` => `if ( name`
+20343	got it. I'll follow up shortly. 
+20352	`switch(parts[1])`  => `switch( parts[1] )`
+20369	Please use double quotes, not single quotes. See: http://docs.jquery.com/JQuery_Core_Style_Guidelines
+20369	jQuery insists on one `var` per function
+20369	`arguments[3]){ ` => `arguments[3] ) {` 
+20369	Should be double quotes
+20380	`jQuery($div)` is redundant... `$div` is sufficient
+20380	Thanks @rwldrn, god knows why I typed that.
+20406	I know I'm being anal, but could you change this back to px?  -999px is fine.  Personally, I'd rather not have any relative values in support.  I know no one is going to do font-size: 0, but still.
+20411	I like the `*` trick, nice one!
+20411	`function (` => `function(`
+20415	Should cache `jQuery.support.elementTraversing` to a var locally
+20415	I can see this easily causing confusion. Suggest changing to:
+
+`elementTraversal: "nextElementSibling" in div,`
+20415	```
+elementTraversal = jQuery.support.elementTraversal, 
+sayElement = ( (elementTraversal && "Element") || "" ), 
+
+next = "next" + sayElement + "Sibling",
+previous = "previous" + sayElement + "Sibling",
+first = "first" + sayElement + "Child";
+
+```
+20415	`sibling: elementTraversal ?`
+20415	`dir: elementTraversal ?`
+20415	`nth: elementTraversal ?`
+20415	This `for` loop can be combined with the one above. Only do the `n !== elem` check if `elem` exists, instead of writing out two nearly identical loops
+20415	Once those loops are combined, the only difference between your new function and the existing one is the property that is being accessed, which you have a variable storing a reference to that name... so why not just change ...
+
+`for ( ; n; n = n.nextSib
+20415	I did that... and than check performance, two loops is faster, than one. It's uglier but faster.
+20415	Can you put together a jsperf comparing the two? I'm just thinking if we can strike a balance between less code, performance, modern api inclusion and maintainability then there is a better chance of getting this in
+20415	Yeah, but it kinda ruin the whole point. In most cases nextElementSibling faster not just because it's iterating on only elements, but because we dont have check on every iteration to see if it's node or not.
+
+Basically, this code is like a question - d
+20415	Right, I follow that - I'm mostly concerned that the rest of the core team is going to be opposed to the two branch approach as well. What if you combined your approach and the existing approach with my `n[ next ]` propert accessor suggestion? Yes - there
+20415	Dammit, i forgot to loose nodeType check. Ok. I will jsperf that again.  
+20415	Funny you say that, because but i did that too. Kinda. With your suggestion, (if i understand you correctly) we still check for node in loop, so performance will go down. I will make jsperf. 
+
+We can go another way, check in function if we have new api an
+20415	I definitely want to see this work... so thanks for the patience and persistance.
+
+The dead code removal isn't what I'm concerned about, I'd prefer to not have two code branches to maintain in the source :)
+20415	jsperf -- http://jsperf.com/children-test-for-jquery-507-pull-request
+20415	Okey, but this line 
+<code>sayElement = ( (elementTraversal && "Element") || "" ),</code>
+
+can loose useless parentheses, so than we got --
+<code>elementTraversal && "Element" || ""</code>
+
+and this is awful looks like --
+<code>elementTraversal ? "Element
+20415	`[first]` -> `[ first ]`. I know the existing code is not styled properly, but I've been told enough times by @rwldrn that new code should always be written according to the core style guidelines.
+20415	`[first]` -> `[ first ]`.
+20415	`[dir]` -> `[ dir ]`.
+20415	`[dir]` -> `[ dir ]`.
+20415	I'm with @rwldrn here, wondering exactly how much of a perf hit it is to merge this loop with the one right below it and end up with:
+
+```
+      for ( ; cur; cur = cur[dir] ) {
+        if ( ( elementTraversal || cur.nodeType === 1 ) && ++num === result ) 
+20415	same comment here. Wondering the perf hit if we combined loops and did:
+
+```
+      for ( ; n; n = n[ next ] ) {
+         if ( elementTraversal ? ( !elem || n !== elem ) : ( n.nodeType === 1 && n !== elem ) ) {
+           r.push( n );
+         }
+      }
+``
+20420	`jQuery.etag[ifModifiedKey] ` => `jQuery.etag[ ifModifiedKey ] `
+20420	Need curly braces
+20420	Need curly braces
+20420	Need curly braces
+20420	Need curly braces
+20425	Declare `attr` and `name` at the top of the function please
+20425	Sure, although I wasn't the one who stuck that var there, I guess I'll add a "cleanup" commit to lift all the vars on this branch?
+20425	So what if you didnt put it there? Be the hero Corey!!!! :D
+20426	You may be able to leave out the "event = " here since you're passing the reference to event.
+20426	Unless you might return a different object, dunno if that's even a possibility but if so it's a remote one.
+20426	I think you want `/^(?:mouse|contextmenu)|click/` here? So the string should start with mouse or contextmenu, or have click in it. 
+20426	It shouldn't be necessary to call propHooks here, because if jQuery.event.fix sees that the event is already fixed then the propHooks ran when it was fixed the first time.
+20426	I think any mouse-related props that you're fixing in the hook and don't exist in other events can be removed from here; just be sure to check originalEvent for the values in that case.
+20426	Just noting that this is adding a `jQuery.fn.contextmenu` method where we didn't have one before. we can either document it or put something in the loop to avoid it. I'm okay with documenting it, any other thoughts?
+20426	If I don't call this here, custom events seem to never be sent through jQuery.event.fix's long path (the first condition will return them)
+20426	I'm indifferent, I added it so that I could avoid adding any _more_ special cases
+20446	This is great, thank you for including tests! A few updates... 
+
+ - `equals` => `equal` (`equals` is deprecated)
+ - We have an ongoing effort to update all the tests to conform to the jQuery Core Style Guide. If you could update the whitespace and var dec
+20446	Update this to... 
+
+```
+var animated1 = jQuery( "<div></div>" ).appendTo( "#qunit-fixture" ), 
+	animated2 = jQuery( "<div></div>" ).appendTo( "#qunit-fixture" ), 
+	animated3 = jQuery( "<div></div>" ).appendTo( "#qunit-fixture" );  
+```
+
+Thanks! And thanks
+20493	This change (removing the closing slash from the checkbox) yields a “not well-formed” exception when using the XHTML(5) Content-Type (`application/xhtml+xml`). Tested with Firefox 6.
+20493	This is a known issue with a patch already in the queue. 
+20493	May you link to the fix in the queue?
+20493	Sure, https://github.com/jquery/jquery/pull/487 For reference, you can see any pending patches by going to "Pull Requests"
+20506	Please change `''` => `""`
+20506	ready
+20517	Watch the spacing here: `propName,attrNames,name` => `propName, attrNames, name`
+20517	`i` is leaking, add it to the var declaration above
+20520	Please add a semi colon to the end of this line
+20520	Please add a semi colon to the end of this line
+20520	Please add a semi colon to the end of this line
+20520	Please don't add unnec. empty lines
+20520	Please add a semi colon to the end of this line
+20520	Please add correct whitespace: `function(){` => `function() {`
+20520	Please add correct whitespace: `function(){` => `function() {`
+20520	Please add a semi colon to the end of this line
+20530	Spacing is an issue here, please `( !jQuery.isArray( array ) )`
+20530	This should be on the previous line
+20530	With regard to approach, adding a function call to the stack is going to have a negative impact on performance. I think you could just as easily check `( !array )`
+20530	> easily check
+
+I've thought about it. You are right, I should use this way.
+20530	good
+20533	`value == null || isNaN( value )` :)
+20537	I can haz spaces? `replace(rmsPrefix, "ms-").` => `replace( rmsPrefix, "ms-" ).`
+20539	Please move the statement to next line, then followed by the `} catch ( ... ` on a new line
+20539	Which property is causing the error? `nodeType`?
+20539	It's the confounded VML elements. If you access any property that doesn't exist they throw an error. In this case `nodeType` doesn't exist. So the `event.target` is a VML element that doesn't have a handler, but it manages to bubble to an HTML element tha
+20551	Please fix the spacing here: `if( ` should be: `if ( `
+20551	Please remove this end of line space
+20551	Please line break after `||` -- improves readability
+20551	Not sure if this has to be === 0, but !elem.sourceIndex will save three bytes and won't be any perceived perf hit.  
+20551	Yeah, I'm not so sure about this either, (another thing that i worry about it's whenever currentStyle return a default display for not attached elements), but it must be a hole point of this property, i try catch some exceptions in tests, but IE consisten
+20551	This is where `defaultDisplay()` is forced to go through the worst-case path, in which it will still create and attach a node to a "secret" iframe element. If this will actually avoid that path from being entered, then it's a definite win.
+20551	If this thing really work as expected ( i added all tests that i could think of ), than maybe i could try this logic on <code>defaultDisplay()</code> itself, than for IE will be no need to append anything to anywhere?
+20551	I haven't had a chance to fully review. Will do that now
+20551	Missing semi-colon 
+20551	Missing semi-colon
+20551	`equals` is deprecated in favor of `equal`
+20551	Was this added to remove data leaks?  If so, use div.removeData('olddisplay', undefined, true) instead to only remove data that you know should be present.
+20551	Did you mean -- <code>jQuery.removeData( div[0], "olddisplay", true );</code>? 
+20551	yes
+20636	The style guide actually says to put these at the top: http://docs.jquery.com/JQuery_Core_Style_Guidelines#Assignment
+20636	This edit is being tossed, but good heads up
+20644	Watch your whitespace here, should be: `=== jQuery ) {`
+20659	I wonder if we could safely do this by doing...
+
+    if ( this[i].className && ... )
+
+We can skip other falsy values besides undefined as well.
+20659	I attempted that first as well but found that it changes the current behavior of hasClass(""). I chose to limit this patch to fixing the hasClass("undefined") bug.
+
+Having said that I think that it would be wise to also look over the expected behavior of 
+20671	This line does not conform to jQuery style guide standards http://docs.jquery.com/JQuery_Core_Style_Guidelines
+20671	Thanks Rick, I can update this – can you provide more detail on the issue here – is it whitespace or the strict inequality test?
+20671	Thanks for getting back so quickly... The white space, which is an fix. The `cbError` var should declared here: https://github.com/niallsmart/jquery/blob/baa2f90a5ceb22df11d781193a999b9d9e332651/src/ajax.js#L490-496 . If `cbError` will only ever be an err
+20671	Per ee6bd30, have added a new commit which eliminates cbError in favor of a try-finally block. Can you review latest diff?
+20686	jQuery style guide dictates assignment declarations be on sep. lines (same for below)
+20686	see previous comment
+20691	Any chance this could be integrated into an existing support page?
+20691	That shouldn't be a problem. I'll move it into bodyBackground.html
+20726	It's helpful when debugging to not have to go to the bug ticket.  Please be more descriptive as to what these tests are doing.  Also, tests should follow style guidelines as well.  Thanks for the hard work!
+20741	Note: Your change introduces different behavior.
+
+Previously, if an exception was thrown while checking for containment, the event handler would *not* fire.
+With your change, if the same exception is thrown, it now will most likely fire (parent !== this i
+20741	Actually I just discovered the null checks are needed.  One of the hover unit tests fail if they are not there.  I think because events triggered programatically (by trigger()) do not have a relatedTarget assigned.
+
+Anyway, all I was trying to say was:
+
+o
+20741	You're right, I was confused. That means the old behavior was incorrect, because if the `relatedTarget` was an XUL element, the mouse did in fact enter (or leave), no?
+20741	I'll take your word for it.  I don't know enough about that case.  I just read code :)  I just wanted to point it out so someone more qualified than me could make the call.
+20750	Is the div.outerHTML needed?
+20750	Shouldn't it be the other way around?
+
+    div = div.outerHTML = null;
+
+Otherwise, <code>div</code> is first set to null, and then <code>outerHTML</code> is referenced, on a null object.
+20750	Doesn't matter, we found a better solution
+20752	How does this affect performance?
+20752	IE9x64 on my Windows 7 VM does ~6200 reps/s of `jQuery('<div id="foo"><span>bar</span></div>')` without this change and ~5800 reps/s with ([source](https://gist.github.com/990134)). You'll probably be able to run more accurate performance tests than I hav
+20759	whitespace at the end of line
+20759	missing space before {
+20759	missing space after if an space before {
+20759	I think we can do a fix from within the width cssHook that doesn't require changing this.
+20759	The logic for retrieving width/height should be in the hooks.  Don't want to globalize this logic.
+20759	Would be good to add similar tests for width, height, innerWidth/Height, and outerHeight.
+20759	Need a space here: `if(` => `if (` and here: `){` => `) {`
+20759	Need a space here: `extra);` => `extra );`
+20759	jQuery uses double quotes, please update
+20799	This is the console.log I was referring to, and yes - this makes me think you haven't tested in IE, unless you're using IETester with Companion.JS or some other third party tool
+20803	Opening brace should be on previous line.
+20803	Watch the whitespace... should be: `if ( readyList && (readyList.isResolved() ... )`
+20810	What's the benefit to doing ( 0 in elems ) over elems [ 0 ]
+I was originally thinking performance.. but i guess it varies.. http://jsperf.com/in-vs-arr-key
+20810	Take for example an arguments object which first (or last) value is **0**. Currently such object will be traversed as an object, and not as an array! Using the **in** operator instead, only the presence of the first and last property is checked, and not t
+20810	What's up with the `(` on 723? it should be on the next line with the expressions it's grouping.
+20810	That '(' starts the group that ends at the end of 725.
+
+--Robert
+
+On 16. svi. 2011., at 00:46, rwldrn <reply@reply.github.com 
+ > wrote:
+
+>> @@ -720,7 +720,9 @@ jQuery.extend({
+>>            i = 0,
+>>            length = elems.length,
+>>            // jqu
+20810	Yeah, I'm quite aware of it's programmatic presence, I'm just wondering why it's on that line, there should be a line-break after `&&` 
+20810	IMHO, in this way it makes more obvious that both (second ant third) lines are inside the group. What you think?
+20810	Why are you arguing? It doesn't match the style of the rest of the code, it's not a matter of opinion.
+20810	Hm, I was/am not aware of such detail in style guideline. Maybe if you tried to argument yourself...
+Don't have intention to arguing such thing at all, so I pushed the change.
+20810	I said nothing about the style guide, let me quote myself... "match the style of the rest of the code"
+20810	You know, I am not too good in English, but something like this I would had certainly understand: "We prefer to always keep '(' on the same line of grouped expressions... can you fix it, please?". Peace.
+20810	I'll be more mindful of your feelings next time
+20822	iframe.contentWindow is crossbrowser support
+see: http://help.dottoro.com/ljctglqj.php
+
+if Browser Support iframe.contentDocument ,  iframe.contentDocument  === iframe.contentWindow.document
+20822	!iframe.createElement , maybe spelling errors , "!iframe.createElement " is always true , so don't need the if statement .
+
+Though Webkit & Firefox won't allow reusing the iframe document, but there is No way to detect. so just re-writing the fake html in
+20822	Fix  IE Throbber of Doom issue. The screencast showing the problem, see: http://www.screenr.com/yja by jdalton.
+20822	There seems to be a lot of repeated code, can you figure out a way to reduce any of the repetition?
+20822	Fix whitespace here, should be: `if ( iframeDoc ) {`
+20822	Fix whitespace here, should be: `if ( !ifragment ) {`
+20822	should be on same line and watch the whitespace: `} catch ( e ) {`
+20837	The reason this is checking length and not type array is to also catch jQuery objects.
+20837	Yes, array-like objects I suppose... though that is precisely the problem. If you give it an object with a length but nothing else, unexpected behavior ensues ({ length: 3 } == [undefined, undefined, undefined] instead of []).
+20837	What, besides jQuery objects, should be considered valid array-like objects? If nothing else, we can do a check for a jQuery object...
+20837	Ok, but the documented use for jQuery.merge is that it only works for arrays and that if the arguments are not arrays, jQuery.makeArray should be used before passing them to merge.  The extra stuff is only for internal convenience.  I don't think we need 
+20837	Maybe I should read the ticket, huh?  Sorry.
+20837	However, I'm not sure this is the way to fix it.  My guess is this would be a noticeable performance decrease in selections and manipulation.  This is my main concern.
+20837	I agree. My main concern is also performance... not sure how much of a hit checking for a jQuery object would be.
+20837	http://jsperf.com/jquery-ticket-8104
+
+Looks like it's a tiny bit slower.
+20838	I imagine this works, but will it generate console errors?
+20838	No. It’s perfectly fine to omit the opening and closing `html` and `body` tags in HTML. In this case however, we can only get rid of the closing tags. I just added a description to my pull request with some more info.
+20839	Fix #8985: http://bugs.jquery.com/ticket/8985
+
+1: In IE domain setted page, to avoid the page throws an Uncaught Error and function failed , use DocumentFragment get the default display value of an element ,more info see: http://cmc3.cn/n/useFragmentGetNo
+20839	!iframe.createElement , maybe spelling errors , "!iframe.createElement " is always true , so don't need the if statement .
+
+Though Webkit & Firefox won't allow reusing the iframe document, but there is No way to detect. so just re-writing the fake html in
+20839	iframe.contentWindow is crossbrowser:
+see: http://help.dottoro.com/ljctglqj.php
+
+Actually : if Browser Support iframe.contentDocument , iframe.contentDocument === iframe.contentWindow.document
+
+So the code " ( iframe.contentWindow || iframe.contentDocumen
+20843	I wonder if we could combine this if with the doc definition above somehow.  Maybe this is too fancy, but...
+
+    var node,
+    ...
+    doc = ( nodes && (node = nodes[0])  && node.ownerDocument || node.createDocumentFragment && node ) || document;
+
+20843	`node.createDocumentFragment && node` could easily be misinterpreted as a code bug (it took me several minutes to figure out that its intent is to ensure `node` is assigned and not simply that operands got inadvertently swapped); I’m strongly inclined to 
+20843	I agree - this execution is based on recommendations from another review. I'd also like to add comments to explain why this check happens (as you've noted). I should revert to my _original_ patch and break the one liner out from there.
+20844	A non-plain object like a jQuery instance would fail the for loop.  Perhaps we could simply check typeof === "object"?  I think that would take care of the new test cases, but were there other use cases in mind?
+20844	This was actually the result of a very extensive review by myself and several of our jQuery community peers. In fact - this patch had already been landed exactly as is, but at the time caused an unforeseen issue with jQuery.param that apparently no longer
+20844	I wonder how much this will make `event.remove()` unnecessarily slower, where tested objects are known to be "plain objects".
+For that cases, perhaps, we can introduce `isObjectEmpty()` or `isEmpty()` that only checks if an object is empty:
+
+	isObjectEmpt
+20844	Can we simply document that isEmptyObject should be called with a plain object? If someone can't assert that then they can call isPlainObject themselves and we don't have to do it every tiime through.
+
+20844	@dmethvin: that sounds fine to me, but in my opinion in that case the name `isEmptyObject` is not adequate (that is why #7413 exists). Perhaps we can use `isObjectEmpty` instead, and deprecating `isEmptyObject`?
+20844	If this was a private API, or it was significantly wrong, I'd agree with renaming. But even `isObjectEmpty` still needs to document that it expects a real `Object`. I think #7413 exists because we didn't document what is valid to pass into the method. Str
+20844	I've updated the docs.
+20844	I can live with that, but ideally API should be as expressive as possible, and certainly avoiding cases where method names are in contradiction with the documentation.
+20846	We can remove the this.nodeName && check as well, since that's in jQuery.nodeName.
+20846	Good call. Removing.
+20849	Whitespaceeeee!
+20849	Already changed in my updates.  No worries aFarkas.
+20855	No need for rval here, just return this; whether there are arguments or not.
+20855	Also, we'll probably want these to be space-separated rather than a variable number of arguments.
+20855	There's an existing pull request from @rmurphey, but at a lower level which will have better performance since we don't need to do the same checks on the same element when there are multiple keys to remove: https://github.com/jquery/jquery/pull/77/files
+20855	it's a good idea, but it can be bad to performance. Maybe need be test if have more that one argument for case.
+
+if(argument.length > 1) forMethod
+else defaultMethod
+
+And maybe it can be bad too to "jQuery default's". I think that is better you use simple
+20858	The reason I'm storing it in a var is because when I ran tests, it proved to be slightly more performant. Hey, every ms counts right!.. especially in jQuery.each.
+20860	`jQuery._data(elem` needs space at `( e`
+20860	Parens inside other function parens don't need spaces
+20860	I think `l` is leaking?
+20862	magic number? :)
+20862	60fps is 16.6666666666666666666666666666666666666666666666666666666ms
+But I should definitely use an integer here.
+20862	Need a === in the throttle check and ticks always resets to 0 here.
+20862	ticks should only reset to 0 when the previous test is true, isn't it?
+20862	Yea, I wasn't sure that's what you wanted though.  ticks never seems to get higher than 1, but maybe that's ok.
+20862	It will, if developers choose to throttle the animation mechanism
+jQuery.fx.throttle = 2 // animation will run at a maximum of 30fps
+20862	You're right, forgive my confusion.  Need to sleep more.  ;)
+20862	Still, let's work out some test cases for this.
+20862	I'll do it asap.
+20877	Shouldn't this be removed?
+20877	Actually this should be the other way around - utility functions should be at the bottom of the file (not sure why clearFxNow/createFxNow are at the top).
+20877	Hmm - why was this argument removed?
+20877	The question is: why was it here?
+It isn't used.
+20877	good catch
+20881	Did you mean to make this #loadedf instead of #loadediframe?
+20881	Can you add an ok( false, "Unbound not successful." ); inside the catch?
+20881	Also, can you do the same set of tests on the main window as well? We want to make sure we do the same operations there as well.
+20881	Sure, should i make a similar change inside "null or undefined handler" as well? 
+20881	Will add it, although i am at jqconf (which you are too, so thanks for getting to this). So wont have time to re run the tests till monday. 
+20881	nope, guess that was a typo. Although that test passed, might take a look into why. 
+20881	I have updated this test to include a test count as it would "pass" as no test would run. Should i add a separate pull request for this? Or you happy to just include it with the next push? 
+20884	Thanks rwaldron, I really wanted to be able to turn my idea into a viable solution, but as I said I'm really glad both of you helped to make it happen.
+I'm happy enough to be quoted in the release note, so I'll remove those two lines if jaubourg doesn't m
+20884	Why initializing them to null? undefined is not enough?
+20888	It looks like the tab/spaces may be messed up on these couple lines.
+20888	The previous empty declarations can all be on one line (e.g. iframeDoc, elem, display;). Also put an endline after it.
+20888	Can we cache this iframe for future use? We could just inject it/remove it when we need to do the test, but we can keep the iframe for later use - this should significantly boost performance.
+20888	Let's just use document.body.removeChild here.
+20911	So far it only uses tickTime when startTime option was given. Could be changed to default event if startTime is not given.
+This would change the default behaviour of jQuery. But I don't see a reason why it should not use the same tick time for each animat
+20920	Why not use jQuery.event.special?
+20920	There must be a better way to do this that doesn't involve checking every binding for all types
+20920	Very true, I styled this based on $.fn.live. Currently within live, the string comparison is done for the following events: focus, blur and hover. Centralizing event aliases seems would be a way to DRY this up(live, die, one, bind), however this might be 
+20920	In $.fn.live, the type is checked before the function is called.
+20927	defining a global here? I don't see the var.
+20927	On line 709 :)
+20931	I believe some browsers freak out when this happens (if I remember correctly, some of the Symbian mobile browsers do). The fix is easy - just break out the function declaration and then just pass it in - so it would be: requestAnimationFrame( raf );
+20953	You've left out the event callback here.  Also I'm not sure I see the advantage of switching to the generic prototype over using the prototype on this.
+20953	Being able to filter out the functions that would require a jQuery instance versus the ones that would be satisfied with the element in an array would be tedious and in my opinion dangerous as it would lack the consistency of always knowing you are workin
+20953	I'm pretty sure that extra `fn` is actually a typo in the original source. After all, `jQuery.fn.bind` and `jQuery.fn.one` only take three arguments each. On that line, they're being called with four. Hence, it was omitted intentionally. And all tests pas
+20953	There is no difference. Right now all members of `jQuery.fn` expect to be called in the context of an instance of `jQuery.fn.init`, which is always an array-like object. There is no need to differentiate between them at the prototype level because every f
+20953	Good point, looking closer that would be for type/function key/value pairs and fn would not be used in that case.
+20953	There's a difference because you are no longer attaching the prototype to the element.  That's the dangerous part.  At which times can you expect the prototype to be there and at which times should you expect a call to a function to throw an undefined err
+20953	I'm not sure I understand your issue with this. The prototype isn't currently ever attached to any elements, unless you're using that term to mean jQuery objects. Basically what I'm saying is that in theory you could make the entire prototype generic, suc
+20953	I'm not sure we're going to get anywhere because I feel like I'm just going to end repeating myself.  I'll respond to your ticket.
+20979	Should change this to "className", "class" is inconsistent across browsers
+20979	http://api.jquery.com/jQuery/#jQuery2 has "class" as example, and I assume jQuery always implied the usage of "class" for this.
+20979	It's never worked for me consistently and those docs should be updated.
+20979	@rwldrn: I'm not sure what you're referring to - class is perfectly find here, you just need to make sure that you have quotes around it.
+20979	If i have time today, I'll put together a reduced test case
+20984	Would it rather be !ajaxLocParts || rlocalProtocol.test(...) ? I would assume the about blank page is a local file, wouldn't you say?
+
+On this note, wouldn't it be better to assume the protocol is file:// with an empty domain name so that crossDomain test
+20986	This particular change serves no purpose since you control for s.crossDomain == null later on which accounts for undefined.
+20986	Arh yes, and it is documented in the comment below so I agree that it is unnecessary. 
+20988	This has some duplicate code.  You could shorten this with an each.  Also, I like your fx.prefilters idea.
+20988	I thought about writing an each to replace the margin/padding but wasn't sure how well it would work / if it would really be much smaller than defining the very similar function twice...  this was one of those times that it seemed just hand writing the fu
+20988	Note that that internal loop is not quite extend... It only replaces if you haven't defined the other property, which allows `.animate({ margin: 10, marginBottom: 20 });`
+
+20988	yea you're right.
+20992	If you're not doing a return statement, switch this to an if/else.
+20992	Tighten this up if there's nothing in it (also, remove the TODO above it).
+20992	Why have you removed this test completely? Do we have  new "less code coverage in the unit tests policy"? If you've replaced it with attrFix and it's only conditional, please update the tests accordingly - not by removing them.
+20992	Line 406, 409 are quite long, if you look at the rest of the source code, you'll see that long ternaries are split over multiple lines, with the operator at the line end
+20992	returns with really long ternaries are easier to read and understand when split across multiple lines
+20992	I'm curious about the performance implications of adding another call to the stack. 
+20992	That was a short life for "hasAttr()" - is there a possible value to adding a hasAttr() to the API?
+20992	Will do.  Wasn't sure we still wanted it.
+20992	Would be good to have feedback about that from all of the core team I think.
+20992	I am also concerned about that.  I'll try to think of a way around it.
+20992	Turns out, the behaviour already exists, as well a ticket marked "wontfix" by me:
+
+http://bugs.jquery.com/ticket/4324
+
+http://jsfiddle.net/rwaldron/wVqvr/4/
+20992	Awesome, thanks dude
+20992	I had some feedback from DaveMethvin where he thought this check may not be needed anymore, but wasn't sure.
+20992	I realized there is actually a call to attr in the current $.fn.removeAttr on master setting properties to empty string.  The diffs here are only with John's original attrHooks branch. Given this, the new $.fn.removeAttr will be a bit faster.  jQuery.remo
+21002	no need for the === true part :)
+21002	We don't use "$"  in the jQuery Source.
+21002	I will fix and optimize it to commit again.
+21006	parens aren't needed here
+21017	Please check the style guide: http://docs.jquery.com/JQuery_Core_Style_Guidelines
+21017	It should be "coding style" compliant now.
+21017	Need to update all single quotes to double quotes
+21021	offsetWidth/height are unreliable cross-browser - especially when it comes to inputs.
+http://jsfiddle.net/jboesch26/Gtm5H/
+21026	Closing this pull request and re-opening it.
+21049	Please have a look at the jQuery Style Guide: http://docs.jquery.com/JQuery_Core_Style_Guidelines
+21049	When I pushed to github the styling messed up. Not sure why.
+21066	why wrapping the additional tests in parenthesis?
+Isn't it equivalent to
+jQuery.isWindow( elem ) && elem !== window && !elem.frameElement
+?
+21066	1) When that gets minified, it doesn't matter, so if it helps readability, then win.
+2) That's the code I removed, so you may want to make this comment on the actual source where it still exists.
+21066	oops : )
+21074	This can be shortened to:
+return elem.classList.contains( selector );
+21074	I don't believe so, since we don't want to return false until all the items in the collection have been checked. Just like line 172-4.
+21074	You're right. I was a little bit too fast there.
+21173	You might want to add a base of 10 here (like in the code you removed on 192-194) to make sure your results are in decimal (base 10).
+
+I can't really think of anything where you'd receive a "0XXX" value from top/left that would mistakenly look like octal 
+21173	I made the same mistake initially, but as ajpiano [pointed out](http://bugs.jquery.com/ticket/7730) parseFloat does not accept a radix argument (for example, see the [Mozilla reference](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/
+21173	Oh, you're right - ignore me then.
+21233	What about using $.isNaN here?
+21233	$.isNaN mostly handles the case of isNaN("")==false which doesn't apply here since parseFloat("") returns NaN and the "" case is checked earlier anyway.
+21233	jQuery.isNaN() is only faster for values != NaN, and parsFloat returns exactly NaN when it fails.
+21233	\>\> I edited this comment multiple times. Sorry if you read it in between <<
+
+This code won't work in IE6. Just try running the test suite there and it will fail all over the place, because IE6 also returns `undefined` and `null` . I suggest this line 
+21233	Thanks for your comments and tests!
+
+(Aptana is driving me nuts, I'm currently searching for another IDE)
+21255	Woahhh... this is kind of crazy! A very interesting idea for catching this case. Seeing arguments.callee, in general, makes me a bit jumpy since it's not available in strict mode - I wonder if there's another way we can achieve this result?
+21255	I'm rather embarrassed by the fragile nature of the logic but after sitting with it in the debugger (VS2010 attached to IE), I just could not find any properties on the event object which would distinguish between one generated by IE user interaction and 
+21255	Unfortunately we can't accept any patches that use jQuery.browser sniffing. Is it really needed in this case? Does beforedeactivate exist in any browser but IE?
+21255	Same goes for here, as well.
+21255	You are correct -- beforedeactivate only exists in IE.  propertychange also only exists in IE.
+
+Would you like me to remove the browser sniffing, and while I'm at it, clean up the code as per JQuery_Core_Style_Guidelines, and rebase it (or whatever the co
+21255	That'd be great - thanks!
+21380	Would it make more sense to have this change inside the main trigger logic itself? That way this will work for all types of events, not just the delegated ones? Also, please be sure to use braces here and multiple lines - thanks!
+21482	Maybe this check needs a modification to check the type with a regex. 
+
+Maybe something along the lines of  `/\/(java|ecma)script/.test( n.type )`  which would handle most sane case. Who uses anything beside text/javascript or application/javascript any
+80417	@gibson042 could you include a explanation comment? Thanks! 
+80417	`/>` is unnecessary with this doctype ;)
+80417	Probably good to keep it though, since we may want to do do XHTML tests and would want to keep the markup compatible with both.
+80417	@rwaldron about the use of the trailing space, or the clsid? The comment above does the latter (well when combined with the conditional below).
+80417	I updated to explain both a little better.
+80417	Good point @dmethvin; I fixed up the meta tag too.
+80417	@dmethvin I don't know where your comment went, but in response, the latter I'm very familiar with, it was the trailing spaces in the property names that I'm curious about. I think we can all agree it's not the sort of thing you'd normally see, so I think
+80417	+1 for the comment, at first glance it seems like a mistake so it'd be good to clarify what's happening here.
+80665	It's not safe to use `getStyles` here because css is excludeable. Just lose the conditional and use `{ zoom: 1 }`.
+80665	Is it safe to not check it at all? It will cause Firefox to gain a `document.body.style.zoom` parameter equal to `undefined` which didn't exist before. Potentially it could misled another library that Fx supports zoom and reason incorrectly from it.
+80665	Alternatively, I could do `typeof body.style.zoom === "string" ? { zoom: "1" } : {}`.
+
+Btw, may I lose quote marks around `1`? Browsers convert it to string anyway and it could save some bytes.
+80665	Or just `body.style.zoom != null ? { zoom: 1 } : {}`, it's shorter.
+80665	Yes, please do omit the quotes. As for guarding, I really don't think it'll be a problem to have a `zoom` that exists but is `undefined`, since we already do worse: https://github.com/jquery/jquery/blob/d55c46659b6008855e59541aede4d529b20f4337/src/support
+80665	I'm not sure if that's worse - it changes the value from "" to "1" but it's applied only when `body.style.zoom` exists so it doesn't screw with Firefox.
+
+I'm not the one to decide here but, to paraphrase, I'll keep the change unless you feel strongly ab
+80667	This should be a `// Support: WebKit<version` style comment... do you know when it was fixed?
+80667	I'm not sure we can drop this and return without errors in e.g. node. Sorry for not adding the `// Support:` comment above, but the code probably needs to stay.
+80667	Please keep the parentheses for clarity and consistency, even though they're not strictly necessary.
+80667	This idiom is not used anywhere in jQuery source, so consistency to what? 
+Parentheses are not strictly or otherwise necessary, are you fear someone would think that's not an immediately invoked function?
+80667	I will refer you to <a href="https://github.com/jquery/jquery/pull/1165#discussion_r2956240">this</a> discussion.
+
+If we talking about node enviroment with jQuery installed through npm, then it should not be a problem, there are other cases though, but 
+80667	It definitely is not fixed in WebKit 534, word "old" is as close as i can get to version number, without testing all other builds of WebKit.
+80667	Awesome! In that case, how about replacing [`div.innerHTML = ""`](https://github.com/orkel/jquery/blob/5851c39d33a383ded559d3a0f49d87360e23421e/src/support.js#L75) with `jQuery( div ).empty()`? I know the current 2.0 definition is functionally equivalent,
+80667	> This idiom is not used anywhere in jQuery source
+
+[callbacks.js](https://github.com/orkel/jquery/blob/5851c39d33a383ded559d3a0f49d87360e23421e/src/callbacks.js#L93-L105)
+[intro.js](https://github.com/orkel/jquery/blob/5851c39d33a383ded559d3a0f49d8736
+80667	<blockquote>
+callbacks.js
+intro.js & outro.js
+</blockquote>
+It's not the same, here is an assignment of FE result and parentheses aren't necessary, in all of those cases parentheses should be present and there is no assignment. 
+
+<blockquote>
+Yes, 
+80667	If <code>window</code> or <code>document</code> or other browser host objects are not defined, e.g. no DOM implementation – error raises will be all around. If jQuery used in xml document, there will be problems with trying to apply inline style to xml no
+80667	We require a DOM implementation (at least in limited senses like having access to `document`), but should not fail to _initialize_ if it is incomplete—though `.css` etc. can generate exceptions in [such an environment](https://github.com/tmpvar/jsdom), ot
+80667	<blockquote>though .css etc. can generate exceptions in such an environment,</blockquote>
+It will not, <code>jsdom</code> has <code>cssstyle</code> package dependence, so it will work just fine, and it still a weird case when jQuery would be used without
+80667	Depends on how broken. If basic dom manipulation would work we wouldn't want to throw an exception here. I agree these are all boundary conditions, but it's probably better for a user to see an error that somehow relates to an action _they_ took rather th
+80667	IIRC, `jsdom` only got functional CSSStyleDeclarations within the past 6 months.
+
+> Why? So jQuery would not throw error in FF and Opera if it used in xml document? That's a weird case too, jQuery would still be broken, if it would be silent about it – 
+80667	All right, <code>if</code> is back.
+80825	`|obj|` ? That's the first time I've seen pipes used as notation to refer to an identifier. Backticks, quotes or no wrapping is more common and obvious I think. Where does this come from?
+80825	*shrug* I probably picked it up from es-discuss. If it makes you uncomfortable, I can change it.
+80834	On the first point, I'm saying that the anonymous function passed to `setTimeout` should not have any parameters, but instead close over a `var self = this;` defined in the outer `preDispatch` function.
+
+On the second, my intuition was wrong, but you ca
+80834	<blockquote>
+On the first point
+</blockquote>
+
+Yeah, i get that, i'm asking why two arguments should be passed to <code>setTimeout</code> function.
+
+You propose this –
+```js
+setTimeout(function() {
+    jQuery.event.dispatch.call( self, event );
+
+80834	Pass the 0 for consistency, compressibility, and maximum browser support. And I tried a pull request, but couldn't select your repo. Just cherry-pick 775f634ccf2e2b1ffc767a38a436d8e51ec45c44.
+80834	<blockquote>
+maximum browser support
+</blockquote>
+All browsers are support that
+
+<blockquote>
+compressibility
+</blockquote>
+It saves additional 2 bytes
+<blockquote>
+consistency
+</blockquote>
+And 10 bytes if this style will be used in all inst
+80834	Cool. Do it as `, 0 )` here and open a new PR to standardize the other calls... you might even want to use [#10417](http://bugs.jquery.com/ticket/10417).
+80834	i will start working on that, thanks!
+80835	As I said previously and still feel very strongly about: I'd like to avoid creating new API. "_" prefixing doesn't cut it.
+80835	Why was this block moved?
+80835	Why was this block moved?
+80835	-1, No new API surface. 
+
+I'm sorry, but we need to find another way.
+80835	It's not so much surface API as it is a simple hook. It's clearly marked as private (leading underscore).
+80835	It is literally impossible to satisfy [#12838](http://bugs.jquery.com/ticket/12838) without new API surface. We may opt not to do it, but we will not find "another way".
+80835	The only other way I see is to have a global `core_evalUrl` variable and require anyone who wants to override the ajax module to do a custom build.
+80835	> The only other way I see is to have a global core_evalUrl variable and require anyone who wants to override the ajax module to do a custom build.
+
+It's not practical. One would be expected to have a build without ajax and be able to use this build wit
+80835	I tend to agree, just exploring the whole solution space as they say. Making someone do a custom build for a situation like this is a lot of pain. So let's just expose it the way it is here.
+80835	> It's not so much surface API
+
+It's a new static method defined on the publicly accessible "surface" of the jQuery constructor function object.
+
+> It's not so much surface API as it is a simple hook. It's clearly marked as private (leading underscore
+80835	There's [240 more](http://bugs.jquery.com/query?status=assigned&status=closed&status=new&status=open&status=pending&status=reopened&type=feature&resolution=notabug&resolution=patchwelcome&resolution=plugin&resolution=wontfix&resolution=duplicate&col=id&co
+80835	HOW DARE YOU CHALLENGE THE POWER OF THE UNDERSCORE??!!?!
+
+Looking out a few months I don't think it's unreasonable for us to come up with a lightweight ajax API, either as a proper subset of what we have or something else entirely. 
+
+We're talking abo
+80835	>> It's not so much surface API
+>It's a new static method defined on the publicly accessible "surface" of the jQuery constructor function object.
+>> It's not so much surface API as it is a simple hook. It's clearly marked as private (leading underscore)
+80835	Why does injecting a script _require_ the ajax module? 
+
+
+As for "_": it's a bogus inference that means nothing. jQuery UI uses it, jQuery uses it... but all it means is that we can close tickets as "Won't Fix", because it's not for user code to mess w
+80835	> Why does injecting a script _require_ the ajax module? 
+
+Because it's not injecting a script, it's making a **synchronous** ajax request (at least for same-domain stuff).
+
+Do you really want to duplicate all of this XMLHttpRequest logic in manipulat
+80835	> Because it's not injecting a script, it's making a **synchronous** ajax request (at least for same-domain stuff).
+
+Precisely. And it's done so for basically [forever](https://github.com/jquery/jquery/commit/c47f6f8f523c8add478fbf5570a67015426f5b86).
+80835	This looks like a script element being created and appended to the `document.head`: https://github.com/jquery/jquery/blob/master/src/ajax/script.js#L34-L48 which would be invoked as a result of this call site: https://github.com/jquery/jquery/blob/master/
+80835	> This looks like a script element being created and appended to the document.head: https://github.com/jquery/jquery/blob/master/src/ajax/script.js#L34-L48 which would be invoked as a result of this call site: https://github.com/jquery/jquery/blob/master/
+80835	What happens if the custom ajax lib doesn't do any of this? Can it just use a script element?
+80835	You can't load a script using script tag injection synchronously.
+80835	Yes, I know—thank you—but that's not what I asked. 
+
+I concede, let's pile more ugly "_" junk onto jQuery. Can't wait for the bug reports.
+80925	Shouldn't the assigned value be `jQuery.fn.toggle`?
+80925	The old behavior was to only use the events toggle if the first *two* arguments were functions, since that's its signature. It may not matter, but it's worth noting.
+80935	What happens if you cache `cssExpand[ i ]` in the loop? Any size reduction?
+
+what about storing "content", "padding" and "border" in vars?
+80935	This makes me sad...
+80935	Care to elaborate? Is the style too goofy? I can introduce an explaining variable if necessary. 
+80935	tried all of that, didn't help. gzip really loves seeing repeated strings rather than new variables. I suppose I can try again now to see if it helps.
+80935	Just tried again, +1 byte gzipped. :-\
+80935	Ok, thanks for giving it a try anyway
+80935	Eh. It's just me picking nits. There is a really long line - goes out of view and the a single character line *shrugs*
+80935	OK, I'll try a different style... brb.
+80935	updated.
+80935	This rarely survives gzip, but what about something based on the following?
+
+```js
+var j, detail,
+  val = 0,
+  i = name === "width" ? 1 : 0,
+  augmentation = [
+    { prop: extra, test: "margin", eq: true, add: true },
+    { prop: "padding", test: isBorder
+80935	it's a bit too obfuscated for my tastes here. What are the savings from doing it this way?
+81052	over here you can just say `return;` without a value, and it'll know to look up the property normally.
+81063	`if( ` => `if ( `
+81063	Move `style = elem.style` to the next line
+81063	space after `//`
+81063	Optional: Spacing inside of the inner parens
+81202	Honest question: why `split(/\s+/)` instead of just `split(' ')`? Is it supposed to be faster or anything?
+81202	What is `subline`?
+81202	Borrowed from `rspace` in `src/attributes.js`, not married to it
+81202	http://jsperf.com/literal-space-vs-regex according to this, literal space is faster
+81202	Cool, it’s shorter too :) It doesn’t seem to make any difference performance-wise in IE.
+81202	http://www.html5accessibility.com/tests/subline.html
+81202	IMHO jQuery should not get ahead of the official (WHATWG/W3C) specs.
+81202	Eh, I had to google for that. I literally copied this string from Jonathan and Paul's prior work (without double checking each nodeName )
+81202	Is it necessary to create a new shim'd fragment each time? Can we pluck the div once we're done and recycle `safe` in a closure so we don't have to rebuild it?
+81202	My mistake to let it last this far. Let's drop subline.
+81202	Should attributes.js than also be changed to use space instead of regex?
+81202	`/\s+/` will capture multiple spaces, it's safer since it can be hard to spot 2 spaces.
+
+```js
+("abbr article  aside").split(' ');    // ["abbr", "article", "", "aside"]
+("abbr article  aside").split(/\s+/);  // ["abbr", "article", "aside"]
+```
+81202	It’s not like this line of code will change very frequently.
+81202	the line will be only executed once, so if it runs 125K ops/sec instead of 200K it won't make any difference.. I would keep the RegExp.
+81202	Pretty sure I did perf testing for that one, but thanks anyway.
+81202	Uhm, yeah — you linked to a jsPerf test case a few lines up ;)
+81202	I took the 125K/200K ops/sec from the Chrome result (of the same jsPerf).
+
+tried to find out if the bottleneck was the `split()` itself or code evaluation ( http://jsperf.com/literal-space-vs-regex/2 ) my version is "doing more stuff" and runs just slig
+81202	Your results seem to favor the literal space as well... I'm not sure what we're arguing here anymore
+81202	yes the literal is faster, but it doesn't really matter since it is doing hundreds of thousands of operations per second and code only runs once...
+
+for me it doesn't matter if it's a space, RegExp or plain array as long as it works properly and nobody in
+81520	Please add a line:
+// Support: Chrome, Safari
+Before this one. We mark workarounds in the code base in this way.
+
+You can reemove the 'in webkit' from this line then.
+81522	since you're changing those anyway, could you put them in alphabetical order?
+81522	Why did add properties with default values?
+81523	style nit: space before comment text
+81652	Why isn't isArray inlined? Could fix it at the same time.
+81664	Since we'll need it for oldIE as well, won't it leak memory there?
+81664	IMO this should be indented as the line 640 (and lines below sloghtly larger)
+81664	Good point; `typeof src.defaultPrevented === "boolean"` *would* be safer.
+81664	I guess here it's not much of a problem, I just wanted to note it since it will be cherry-picked to `1.x-master` later and there needs to be a modification in this line for that branch.
+81664	Yeah, a little bigger but cherry-pickable, and we might as well keep the two branches in sync on patches like these unless there's a good incentive the other way.
+81664	I was debating on that. It doesn't seem that the style guide dictates either (which is okay with me) but I can see the point for this line being indented one more since it's cascaded conditional expressions.
+81664	It just seems logical to indent it more because of what you said.
+81664	Size isn't enough incentive? ;) Since we're trying to squeeze out every last possible bit of savings...
+81664	Here you go, smaller *and* safer:
+```js
+this.isDefaultPrevented = src.defaultPrevented ||
+        src.defaultPrevented === undefined &&
+        src.getPreventDefault && src.getPreventDefault() ?
+    returnTrue :
+    returnFalse;
+```
+81664	`src.defaultPrevented === undefined` is smaller because gzip? @gibson042, you're awesome. :D
+81664	I would expect the formatting to be:
+
+```js
+this.isDefaultPrevented = "defaultPrevented" in src ?
+	( src.defaultPrevented ? returnTrue : returnFalse ) :
+
+	// Support: Android < 4.0
+	src.getPreventDefault && src.getPreventDefault() ?
+		returnTrue :
+81664	@scottgonzalez :+1: 
+81682	No more cleanup, just enter and retrieve/create element data.
+81682	Ensure we won't try to access a property of an undefined object
+81712	noooooooo.
+
+no space before `:`
+81712	and here too
+81724	and so what happens if the token you are looking for contains regex reserved characters?
+
+```
+var token = new RegExp(".", "i");
+var val = "abcdef";
+console.log(val.replace(token, "")); //will log bcdef
+```
+81724	I wonder what the performance implications of `.match` vs. `.indexOf` are?
